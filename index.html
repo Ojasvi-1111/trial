@@ -11,293 +11,316 @@
 <title>Mistake Logger</title>
 <style>
 :root{
-  --bg:#010736;
-  --surface:#0D1C42;
-  --surface-hi:#142654;
-  --line:#1B2E5E;
-  --line-hi:#2A4079;
-  --ink:#EAEEF7;
-  --ink-2:#93A1C4;
-  --ink-3:#5E6C96;
-  --teal:#2FBFAE;
-  --teal-ink:#012420;
-  --teal-soft:rgba(47,191,174,.13);
-  --danger:#FF7A7A;
-  --r:10px;
+  --bg:#010736; --surface:#0D1C42; --surface-hi:#142654;
+  --line:#1B2E5E; --line-hi:#2A4079;
+  --ink:#EAEEF7; --ink-2:#93A1C4; --ink-3:#5E6C96;
+  --teal:#2FBFAE; --teal-ink:#012420; --teal-soft:rgba(47,191,174,.13);
+  --red:#FF7A7A; --r:10px;
 }
-
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html{-webkit-text-size-adjust:100%;height:100%;}
+html{-webkit-text-size-adjust:100%;}
 body{
-  margin:0;height:100%;
-  background:var(--bg);color:var(--ink);
+  margin:0;background:var(--bg);color:var(--ink);
   font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif;
   font-size:15px;line-height:1.45;
-  padding-top:env(safe-area-inset-top,0px);
-  padding-bottom:env(safe-area-inset-bottom,0px);
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
   overscroll-behavior-y:none;
 }
-.wrap{max-width:520px;margin:0 auto;padding:0 16px;}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px 40px;}
 
-/* ---------- header ---------- */
-header{
-  height:36px;display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:6px;
+/* nav */
+nav{display:flex;align-items:center;gap:2px;height:40px;margin-bottom:8px;}
+.tab{
+  flex:0 0 auto;font:500 13px/1 inherit;color:var(--ink-3);
+  background:none;border:0;padding:8px 9px;border-radius:7px;cursor:pointer;
 }
-.crumb{font-size:13px;font-weight:500;color:var(--ink-3);letter-spacing:.01em;}
+.tab.on{color:var(--teal);background:var(--teal-soft);}
 .iconbtn{
-  width:32px;height:32px;display:grid;place-items:center;position:relative;
-  background:none;border:0;border-radius:8px;color:var(--ink-2);cursor:pointer;
+  margin-left:auto;width:32px;height:32px;display:grid;place-items:center;position:relative;
+  background:none;border:0;border-radius:8px;color:var(--ink-2);cursor:pointer;flex:0 0 auto;
 }
-.iconbtn:active{background:var(--surface);}
-.iconbtn svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.7;}
-.dot{
-  position:absolute;top:4px;right:4px;width:7px;height:7px;border-radius:50%;
-  background:var(--teal);box-shadow:0 0 0 2px var(--bg);
-}
+.iconbtn.on{color:var(--teal);}
+.iconbtn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;}
+.dot{position:absolute;top:3px;right:3px;width:7px;height:7px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 2px var(--bg);}
 .dot[hidden]{display:none;}
 
-/* ---------- topic ---------- */
+/* log form */
 .field{position:relative;}
-#topic{
-  width:100%;height:56px;
-  font:500 22px/1.2 inherit;letter-spacing:-.01em;
-  color:var(--ink);background:var(--surface);
-  border:1px solid var(--line);border-radius:var(--r);
-  padding:0 15px;outline:none;
+.tin{
+  width:100%;height:56px;font:500 22px/1.2 inherit;letter-spacing:-.01em;
+  color:var(--ink);background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--r);padding:0 15px;outline:none;
 }
-#topic::placeholder{color:var(--ink-3);font-weight:400;}
-#topic:focus{border-color:var(--line-hi);box-shadow:0 0 0 3px var(--teal-soft);}
-
-#suggest{
+.tin::placeholder{color:var(--ink-3);font-weight:400;}
+.tin:focus{border-color:var(--line-hi);box-shadow:0 0 0 3px var(--teal-soft);}
+.sugbox{
   position:absolute;z-index:30;left:0;right:0;top:calc(100% + 6px);
   background:var(--surface);border:1px solid var(--line-hi);border-radius:var(--r);
-  box-shadow:0 14px 40px rgba(0,2,20,.55);
-  max-height:180px;overflow-y:auto;overscroll-behavior:contain;
+  box-shadow:0 14px 40px rgba(0,2,20,.55);max-height:180px;overflow-y:auto;overscroll-behavior:contain;
 }
-#suggest:empty{display:none;}
-.sug{
-  display:flex;align-items:center;gap:10px;height:44px;padding:0 14px;
-  border-bottom:1px solid var(--line);cursor:pointer;
-}
+.sugbox:empty{display:none;}
+.sug{display:flex;align-items:center;gap:10px;height:44px;padding:0 14px;border-bottom:1px solid var(--line);cursor:pointer;}
 .sug:last-child{border-bottom:0;}
 .sug:active{background:var(--surface-hi);}
 .sug .nm{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sug .sb{font-size:11.5px;color:var(--ink-3);white-space:nowrap;}
 .sug .ct{margin-left:auto;font-size:12.5px;color:var(--ink-3);font-variant-numeric:tabular-nums;}
 
-/* ---------- subject row ---------- */
-.subrow{height:22px;display:flex;align-items:center;margin-top:10px;}
+.subrow{min-height:22px;display:flex;align-items:center;margin-top:10px;}
 .sublocked{font-size:13px;color:var(--ink-2);}
 .sublocked b{font-weight:500;color:var(--teal);}
-.subpick{
-  font:500 13px/1 inherit;color:var(--teal);
-  background:var(--teal-soft);border:1px solid rgba(47,191,174,.32);
-  border-radius:7px;padding:5px 10px;cursor:pointer;
-}
+.subpick{font:500 13px/1 inherit;color:var(--teal);background:var(--teal-soft);border:1px solid rgba(47,191,174,.32);border-radius:7px;padding:5px 10px;cursor:pointer;}
 .subempty{font-size:13px;color:var(--ink-3);}
 
-/* ---------- chips ---------- */
 .chips{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px;}
-.chips.read{
-  margin-top:0;padding-top:16px;position:relative;
-}
-.chips.read::before{
-  content:"";position:absolute;top:8px;left:0;right:0;height:1px;background:var(--line);
-}
+.chips.read{margin-top:0;padding-top:16px;position:relative;}
+.chips.read::before{content:"";position:absolute;top:8px;left:0;right:0;height:1px;background:var(--line);}
 .chip{
   height:44px;display:flex;align-items:center;justify-content:center;
-  font:500 14px/1 inherit;text-align:center;
-  color:var(--ink-2);background:var(--surface);
-  border:1px solid var(--line);border-radius:var(--r);
-  cursor:pointer;transition:background .13s,color .13s,border-color .13s;
+  font:500 14px/1 inherit;color:var(--ink-2);background:var(--surface);
+  border:1px solid var(--line);border-radius:var(--r);cursor:pointer;
+  transition:background .13s,color .13s,border-color .13s;
 }
 .chip:active{background:var(--surface-hi);}
-.chip[aria-pressed="true"]{
-  background:var(--teal);border-color:var(--teal);color:var(--teal-ink);
-}
+.chip[aria-pressed="true"]{background:var(--teal);border-color:var(--teal);color:var(--teal-ink);}
 
-/* ---------- note ---------- */
 .noterow{margin-top:16px;min-height:28px;}
-.addnote{
-  font:500 13px/1 inherit;color:var(--ink-3);
-  background:none;border:0;padding:6px 0;cursor:pointer;
-}
-.addnote:active{color:var(--ink-2);}
-#note{
-  width:100%;height:44px;
-  font:400 16px/1.4 inherit;color:var(--ink);
-  background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
-  padding:0 14px;outline:none;
-}
-#note::placeholder{color:var(--ink-3);}
-#note:focus{border-color:var(--line-hi);}
-#ncount{font-size:11.5px;color:var(--ink-3);text-align:right;margin-top:4px;font-variant-numeric:tabular-nums;}
+.addnote{font:500 13px/1 inherit;color:var(--ink-3);background:none;border:0;padding:6px 0;cursor:pointer;}
+.nin{width:100%;height:44px;font:400 16px/1.4 inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:0 14px;outline:none;}
+.nin::placeholder{color:var(--ink-3);}
+.ncount{font-size:11.5px;color:var(--ink-3);text-align:right;margin-top:4px;font-variant-numeric:tabular-nums;}
 
-/* ---------- save ---------- */
-#save{
-  width:100%;height:52px;margin-top:14px;
-  font:600 16px/1 inherit;letter-spacing:.01em;
-  color:var(--teal-ink);background:var(--teal);
-  border:0;border-radius:var(--r);cursor:pointer;
-  transition:opacity .13s,transform .08s;
+.primary{
+  width:100%;height:52px;margin-top:14px;font:600 16px/1 inherit;
+  color:var(--teal-ink);background:var(--teal);border:0;border-radius:var(--r);cursor:pointer;
+  transition:transform .08s;
 }
-#save:active{transform:scale(.988);}
-#save:disabled{background:var(--surface);color:var(--ink-3);cursor:default;transform:none;}
+.primary:active{transform:scale(.988);}
+.primary:disabled{background:var(--surface);color:var(--ink-3);transform:none;cursor:default;}
 
-/* ---------- recent ---------- */
-.recent{margin:30px 0 40px;border-top:1px solid var(--line);padding-top:14px;}
-.rhead{font-size:12px;color:var(--ink-3);margin-bottom:12px;font-variant-numeric:tabular-nums;}
-.entry{padding:10px 0;border-bottom:1px solid var(--line);}
-.entry:last-child{border-bottom:0;}
-.etop{display:flex;align-items:baseline;gap:8px;}
-.etop .t{font-weight:500;font-size:14.5px;}
-.etop .s{font-size:11px;color:var(--ink-3);margin-left:auto;white-space:nowrap;}
-.enote{font-size:13px;color:var(--ink-2);margin-top:2px;}
-.etags{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;}
-.tag{font-size:11px;padding:2px 7px;border-radius:99px;background:var(--surface);color:var(--ink-2);border:1px solid var(--line);}
+/* search */
+.search{
+  width:100%;height:40px;margin-bottom:12px;font:400 15px/1 inherit;
+  color:var(--ink);background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--r);padding:0 13px;outline:none;
+}
+.search::placeholder{color:var(--ink-3);}
+.search:focus{border-color:var(--line-hi);}
+
+/* topic rows */
+.trow{border-bottom:1px solid var(--line);}
+.thead{display:flex;align-items:center;gap:10px;padding:12px 0;cursor:pointer;}
+.tmain{min-width:0;flex:1;}
+.tname{font-weight:500;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tmeta{font-size:11.5px;color:var(--ink-3);margin-top:3px;display:flex;flex-wrap:wrap;gap:8px;font-variant-numeric:tabular-nums;}
+.tmeta .rep{color:var(--red);}
+.tmeta .warn{color:#E0A64B;}
+.tick{
+  flex:0 0 auto;width:38px;height:38px;border-radius:50%;
+  display:grid;place-items:center;cursor:pointer;
+  background:var(--surface);border:1px solid var(--line);color:var(--ink-3);
+}
+.tick svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2.2;}
+.tick.live{background:var(--teal);border-color:var(--teal);color:var(--teal-ink);}
+.tick.grey{background:transparent;border-color:var(--line-hi);color:var(--ink-3);opacity:.65;}
+.tbody{padding:2px 0 12px;}
+
+/* entries */
+.ent{display:flex;gap:10px;padding:9px 0;align-items:flex-start;}
+.etick{
+  flex:0 0 auto;width:26px;height:26px;border-radius:50%;margin-top:1px;
+  display:grid;place-items:center;cursor:pointer;
+  background:transparent;border:1px solid var(--line-hi);color:transparent;
+}
+.etick svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.6;}
+.etick.live{background:var(--teal);border-color:var(--teal);color:var(--teal-ink);}
+.etick.grey{border-color:var(--line-hi);color:var(--ink-3);opacity:.6;}
+.ebody{flex:1;min-width:0;cursor:pointer;}
+.eline{display:flex;align-items:baseline;gap:8px;}
+.enote{font-size:13.5px;color:var(--ink);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.enote.none{color:var(--ink-3);font-style:italic;}
+.edate{margin-left:auto;font-size:11px;color:var(--ink-3);white-space:nowrap;font-variant-numeric:tabular-nums;}
+.rdot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--red);margin-right:6px;vertical-align:middle;}
+.etags{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;}
+.tag{font-size:10.5px;padding:2px 7px;border-radius:99px;background:var(--surface);color:var(--ink-2);border:1px solid var(--line);}
 .tag.r{color:var(--ink-3);}
-.empty{font-size:13.5px;color:var(--ink-3);}
+.eaged{font-size:10.5px;color:var(--ink-3);margin-top:4px;}
+.showall{font:500 12px/1 inherit;color:var(--teal);background:none;border:0;padding:8px 0;cursor:pointer;}
 
-/* ---------- settings ---------- */
+/* misc blocks */
+.hidefoot{font:500 12.5px/1 inherit;color:var(--ink-3);background:none;border:0;padding:16px 0;cursor:pointer;display:block;}
+.panel{margin-top:26px;border-top:1px solid var(--line);padding-top:16px;}
+.panel h2{font:500 12px/1 inherit;color:var(--ink-3);margin:0 0 12px;}
+.prow{display:flex;align-items:baseline;gap:10px;padding:7px 0;font-size:14px;}
+.prow .n{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--ink-2);}
+.empty{font-size:13.5px;color:var(--ink-3);padding:8px 0;}
+.hint{font-size:12.5px;color:var(--ink-3);line-height:1.5;margin:2px 2px 16px;}
+
+/* settings */
 .sect{margin-top:22px;}
 .sect h2{font:500 12px/1 inherit;color:var(--ink-3);margin:0 0 10px;}
 .btn{
-  width:100%;height:48px;margin-bottom:8px;
-  display:flex;align-items:center;padding:0 15px;gap:10px;
-  font:500 15px/1 inherit;text-align:left;
-  color:var(--ink);background:var(--surface);
-  border:1px solid var(--line);border-radius:var(--r);cursor:pointer;
+  width:100%;min-height:48px;margin-bottom:8px;display:flex;align-items:center;
+  padding:0 15px;gap:10px;font:500 15px/1.3 inherit;text-align:left;
+  color:var(--ink);background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--r);cursor:pointer;
 }
 .btn:active{background:var(--surface-hi);}
 .btn:disabled{color:var(--ink-3);cursor:default;}
 .btn small{margin-left:auto;font-weight:400;font-size:12.5px;color:var(--ink-3);}
-.btn.warn{color:var(--danger);border-color:rgba(255,122,122,.25);}
-.note{font-size:12.5px;color:var(--ink-3);line-height:1.5;margin:2px 2px 16px;}
+.btn.warn{color:var(--red);border-color:rgba(255,122,122,.25);}
 .stat{font-size:13px;color:var(--ink-2);margin-bottom:14px;font-variant-numeric:tabular-nums;}
 
-/* ---------- sheet ---------- */
-#sheet{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;}
-#sheet[hidden]{display:none;}
-.scrim{position:absolute;inset:0;background:rgba(0,1,12,.68);}
-.sheetbody{
-  position:relative;width:100%;max-width:520px;margin:0 auto;
-  background:var(--surface);border-radius:16px 16px 0 0;
-  border-top:1px solid var(--line-hi);
+/* sheets */
+.sheet{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;}
+.sheet[hidden]{display:none;}
+.scrim{position:absolute;inset:0;background:rgba(0,1,12,.7);}
+.sbody{
+  position:relative;width:100%;max-width:560px;margin:0 auto;background:var(--surface);
+  border-radius:16px 16px 0 0;border-top:1px solid var(--line-hi);
   padding:14px 16px calc(18px + env(safe-area-inset-bottom,0px));
-  max-height:74vh;display:flex;flex-direction:column;
+  max-height:86vh;display:flex;flex-direction:column;overflow-y:auto;
   animation:up .19s cubic-bezier(.2,.8,.3,1);
 }
 @keyframes up{from{transform:translateY(14px);opacity:.6}to{transform:none;opacity:1}}
-.sheetbody h3{font:500 14px/1 inherit;margin:2px 0 14px;color:var(--ink-2);}
-.subgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;overflow-y:auto;overscroll-behavior:contain;padding-bottom:4px;}
-.subchip{
-  min-height:42px;display:flex;align-items:center;padding:0 12px;
-  font:500 13.5px/1.2 inherit;text-align:left;
-  color:var(--ink);background:var(--bg);
-  border:1px solid var(--line);border-radius:9px;cursor:pointer;
-}
+.sbody h3{font:500 14px/1.35 inherit;margin:2px 0 14px;color:var(--ink-2);}
+.subgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;overflow-y:auto;overscroll-behavior:contain;}
+.subchip{min-height:42px;display:flex;align-items:center;padding:0 12px;font:500 13.5px/1.2 inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:9px;cursor:pointer;text-align:left;}
 .subchip:active{border-color:var(--teal);color:var(--teal);}
+.srow{display:flex;gap:8px;margin-top:6px;}
+.srow .primary{margin-top:0;}
+.ghost{
+  width:100%;height:52px;font:500 15px/1 inherit;color:var(--ink-2);
+  background:transparent;border:1px solid var(--line-hi);border-radius:var(--r);cursor:pointer;
+}
+.ghost.danger{color:var(--red);border-color:rgba(255,122,122,.3);}
+.slabel{font:500 11.5px/1 inherit;color:var(--ink-3);margin:16px 0 8px;}
 
-/* ---------- toast + banners ---------- */
+/* toast + banners */
 #toast{
   position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));
-  transform:translateX(-50%) translateY(8px);
-  max-width:calc(100% - 32px);z-index:70;
-  background:var(--ink);color:var(--bg);
-  font:500 13.5px/1 inherit;padding:11px 16px;border-radius:99px;
-  opacity:0;pointer-events:none;transition:opacity .16s,transform .16s;
+  transform:translateX(-50%) translateY(8px);max-width:calc(100% - 32px);z-index:70;
+  background:var(--ink);color:var(--bg);font:500 13.5px/1.35 inherit;
+  padding:11px 16px;border-radius:14px;opacity:0;pointer-events:none;
+  transition:opacity .16s,transform .16s;text-align:center;
 }
 #toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
-
-.banner{
-  margin:0 0 12px;padding:12px 14px;border-radius:var(--r);
-  font-size:13px;line-height:1.5;
-  background:var(--surface);border:1px solid var(--line-hi);color:var(--ink-2);
-}
-.banner.bad{border-color:rgba(255,122,122,.35);color:var(--danger);}
+.banner{margin:0 0 12px;padding:12px 14px;border-radius:var(--r);font-size:13px;line-height:1.5;background:var(--surface);border:1px solid var(--line-hi);color:var(--ink-2);}
+.banner.bad{border-color:rgba(255,122,122,.35);color:var(--red);}
 .banner b{color:var(--ink);font-weight:500;}
 .banner[hidden]{display:none;}
-
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
 </style>
 </head>
 <body>
-
 <div class="wrap">
-  <header>
-    <span class="crumb" id="crumb">Log</span>
-    <button class="iconbtn" id="nav" aria-label="Settings">
-      <svg viewBox="0 0 24 24" id="navIcon"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      <span class="dot" id="navDot" hidden></span>
+  <nav>
+    <button class="tab on" data-s="log">Log</button>
+    <button class="tab" data-s="ranked">Ranked</button>
+    <button class="tab" data-s="recent">Recent</button>
+    <button class="tab" data-s="subjects">Subjects</button>
+    <button class="iconbtn" id="gear" aria-label="Settings">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span class="dot" id="gearDot" hidden></span>
     </button>
-  </header>
+  </nav>
 
   <p class="banner bad" id="fatal" hidden></p>
   <p class="banner bad" id="lost" hidden></p>
   <p class="banner" id="evict" hidden></p>
 
-  <!-- ══════════ LOG ══════════ -->
   <main id="scLog">
     <div class="field">
-      <input id="topic" type="text" placeholder="Topic" autocomplete="off"
+      <input id="topic" class="tin" type="text" placeholder="Topic" autocomplete="off"
              autocapitalize="words" autocorrect="off" spellcheck="false" enterkeyhint="next">
-      <div id="suggest" role="listbox"></div>
+      <div id="suggest" class="sugbox" role="listbox"></div>
     </div>
-
     <div class="subrow" id="subrow"></div>
-
     <div class="chips" id="chipsM"></div>
     <div class="chips read" id="chipsR"></div>
-
-    <div class="noterow" id="noterow">
+    <div class="noterow">
       <button class="addnote" id="addnote" type="button">+ note</button>
       <div id="notewrap" hidden>
-        <input id="note" type="text" placeholder="what exactly" autocomplete="off" enterkeyhint="done">
-        <div id="ncount" hidden></div>
+        <input id="note" class="nin" type="text" placeholder="what exactly" autocomplete="off" enterkeyhint="done">
+        <div id="ncount" class="ncount" hidden></div>
       </div>
     </div>
-
-    <button id="save" disabled>Save</button>
-
-    <section class="recent">
-      <div class="rhead" id="rhead">Nothing logged yet</div>
-      <div id="rlist"><p class="empty">Type a topic above. Five mistakes from one block should take about a minute.</p></div>
-    </section>
+    <button id="save" class="primary" disabled>Save</button>
   </main>
 
-  <!-- ══════════ SETTINGS ══════════ -->
+  <main id="scRanked" hidden>
+    <p class="banner" id="nagR" hidden></p>
+    <input id="search" class="search" type="text" placeholder="Search topics" autocomplete="off" hidden>
+    <div id="rankList"></div>
+    <button class="hidefoot" id="hideFoot" hidden></button>
+    <div class="panel" id="readPanel"></div>
+  </main>
+
+  <main id="scRecent" hidden>
+    <p class="hint">Mistakes from the last 90 days only, ranked without any repeat history. What is going wrong now.</p>
+    <div id="recentList"></div>
+  </main>
+
+  <main id="scSubjects" hidden>
+    <div id="subjHead"></div>
+    <div id="subjList"></div>
+  </main>
+
   <main id="scSet" hidden>
     <div class="stat" id="stat"></div>
-    <p class="banner" id="nag" hidden></p>
-
+    <p class="banner" id="nagS" hidden></p>
     <div class="sect">
       <h2>Backup</h2>
       <button class="btn" id="bExport">Export JSON <small id="expWhen"></small></button>
       <button class="btn" id="bImport">Import JSON <small>merge</small></button>
       <input type="file" id="file" accept="application/json,.json" hidden>
-      <p class="note">Export writes one file with everything in it. Mail it to yourself — a file sitting in Downloads is not a backup. Import skips anything already here, so running it twice is safe.</p>
+      <p class="hint">Export writes one file with everything in it. Mail it to yourself — a file sitting in Downloads is not a backup. Import skips anything already here, so running it twice is safe.</p>
     </div>
-
     <div class="sect">
       <h2>Danger</h2>
       <button class="btn warn" id="bWipe">Clear all data</button>
-      <p class="note">This cannot be undone and there is no copy anywhere else.</p>
+      <p class="hint">Cannot be undone. There is no copy anywhere else.</p>
     </div>
-
     <div class="sect">
       <h2>About</h2>
-      <p class="note">Everything lives in this browser on this device. Nothing is uploaded, there is no account and no server. Clearing your browser data, or iOS reclaiming space after a long gap, will erase the log — export is the only protection.</p>
+      <p class="hint">Everything lives in this browser on this device. Nothing is uploaded, there is no account and no server. Clearing browser data, or iOS reclaiming space after a long gap, erases the log. Export is the only protection.</p>
     </div>
   </main>
 </div>
 
-<!-- subject sheet -->
-<div id="sheet" hidden>
-  <div class="scrim" id="scrim"></div>
-  <div class="sheetbody">
-    <h3 id="sheetTitle">Which subject?</h3>
-    <div class="subgrid" id="subgrid"></div>
+<div class="sheet" id="sheetSub" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sbody"><h3>Which subject?</h3><div class="subgrid" id="subgrid"></div></div>
+</div>
+
+<div class="sheet" id="sheetAsk" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sbody">
+    <h3 id="askText"></h3>
+    <button class="primary" id="askYes"></button>
+    <div style="height:8px"></div>
+    <button class="ghost" id="askNo">Cancel</button>
+  </div>
+</div>
+
+<div class="sheet" id="sheetEdit" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sbody">
+    <h3>Edit mistake</h3>
+    <div class="field">
+      <input id="eTopic" class="tin" type="text" placeholder="Topic" autocomplete="off" autocapitalize="words" autocorrect="off" spellcheck="false">
+      <div id="eSuggest" class="sugbox" role="listbox"></div>
+    </div>
+    <div class="subrow" id="eSubrow"></div>
+    <div class="chips" id="eChipsM"></div>
+    <div class="chips read" id="eChipsR"></div>
+    <input id="eNote" class="nin" type="text" placeholder="what exactly" autocomplete="off" style="margin-top:16px">
+    <div class="slabel" id="eTickInfo"></div>
+    <button class="primary" id="eSave">Save changes</button>
+    <div style="height:8px"></div>
+    <button class="ghost" id="eUntick" hidden>Remove last tick</button>
+    <div style="height:8px"></div>
+    <button class="ghost danger" id="eDel">Delete this entry — it wasn't a real mistake</button>
   </div>
 </div>
 
@@ -305,595 +328,711 @@ header{
 
 <script>
 'use strict';
-
-/* ═════════════════════════════════════════════════════════════
-   CONSTANTS — single source of truth. Nothing below hardcodes
-   a multiplier. Most of SCORING is unused until step 2; it
-   ships now so step 2 never invents its own numbers.
-   ═════════════════════════════════════════════════════════════ */
+/* ══════════════════ CONSTANTS ══════════════════ */
 const SCORING = {
-  age: [
-    { maxDays: 45,  mult: 1 },
-    { maxDays: 180, mult: 0.5 },
-    { maxDays: Infinity, mult: 0.25 }
-  ],
-  revisedMult: 0.25,
-  repeatMult: 4,
-  repeatStep: 0.5,
-  decayWindowDays: 90,
-  decayFloor: 0.75,
-  tickLifeDays: 30,
-  recentWindowDays: 90,
-  splitWarnAt: 16,
-  searchMinEntries: 50,
-  expandCap: 10,
-  exportNagDays: 7,
-  readingPanelDays: 30
+  age:[{maxDays:45,mult:1},{maxDays:180,mult:0.5},{maxDays:Infinity,mult:0.25}],
+  revisedMult:0.25, repeatMult:4, repeatStep:0.5,
+  decayWindowDays:90, decayFloor:0.75, tickLifeDays:30,
+  recentWindowDays:90, splitWarnAt:16, searchMinEntries:50,
+  expandCap:10, exportNagDays:7, readingPanelDays:30
 };
-
-const MATERIAL = ['gap','confuse','fifty','luck'];
-const READING  = ['misread','blank'];
-
-const TYPES = [
-  { code:'gap',     label:"Didn't know it" },
-  { code:'confuse', label:'Confused two'   },
-  { code:'fifty',   label:'50:50, wrong'   },
-  { code:'luck',    label:'Lucky guess'    },
-  { code:'misread', label:'Misread stem'   },
-  { code:'blank',   label:'Blanked'        }
+const MATERIAL=['gap','confuse','fifty','luck'];
+const READING =['misread','blank'];
+const TYPES=[
+  {code:'gap',label:"Didn't know it"},{code:'confuse',label:'Confused two'},
+  {code:'fifty',label:'50:50, wrong'},{code:'luck',label:'Lucky guess'},
+  {code:'misread',label:'Misread stem'},{code:'blank',label:'Blanked'}
 ];
-const LABEL = Object.fromEntries(TYPES.map(t => [t.code, t.label]));
+const LABEL=Object.fromEntries(TYPES.map(t=>[t.code,t.label]));
+const SUBJECTS=['Anatomy','Physiology','Biochemistry','Pathology','Pharmacology','Microbiology',
+  'Forensic Medicine','Community Medicine','Medicine','Surgery','OBG','Anaesthesia','Radiology',
+  'Pediatrics','Dermatology','Psychiatry','Orthopaedics','ENT','Ophthalmology'];
+const SCHEMA=1, NOTE_CAP=140, DAY=86400000;
 
-const SUBJECTS = [
-  'Anatomy','Physiology','Biochemistry','Pathology','Pharmacology','Microbiology',
-  'Forensic Medicine','Community Medicine','Medicine','Surgery','OBG','Anaesthesia',
-  'Radiology','Pediatrics','Dermatology','Psychiatry','Orthopaedics','ENT','Ophthalmology'
-];
+/* ══════════════════ STATE ══════════════════ */
+let db=null, entries=[], meta={}, tmap=new Map();
+let screen='log', saving=false, readFailed=false;
+let pendingSubject=null, sugs=[], expanded=new Set(), showAll=new Set();
+let query='', showHidden=false, openSubject=null;
+let editing=null, ePicked=new Set(), ePending=null, eSugs=[];
+const picked=new Set();
 
-const SCHEMA = 1;
-const NOTE_CAP = 140;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
-/* ═════════════════════════════════════════════════════════════
-   STATE
-   ═════════════════════════════════════════════════════════════ */
-let db = null;
-let entries = [];                 // whole log, in memory
-let topics  = new Map();          // topicKey -> {topic, subject, count}
-let meta    = {};
-const picked = new Set();         // selected type codes
-let pendingSubject = null;        // subject chosen for a brand-new topic
-let saving = false;
-let readFailed = false;
-let sugs = [];
-
-const $ = id => document.getElementById(id);
-const el = {
-  topic:$('topic'), suggest:$('suggest'), subrow:$('subrow'),
-  chipsM:$('chipsM'), chipsR:$('chipsR'),
-  addnote:$('addnote'), notewrap:$('notewrap'), note:$('note'), ncount:$('ncount'),
-  save:$('save'), rhead:$('rhead'), rlist:$('rlist'),
-  toast:$('toast'), fatal:$('fatal'), lost:$('lost'), evict:$('evict'),
-  sheet:$('sheet'), scrim:$('scrim'), subgrid:$('subgrid'),
-  nav:$('nav'), navDot:$('navDot'), crumb:$('crumb'),
-  scLog:$('scLog'), scSet:$('scSet'),
-  stat:$('stat'), nag:$('nag'), expWhen:$('expWhen'), file:$('file')
-};
-
-/* ═════════════════════════════════════════════════════════════
-   TIME — every boundary is local midnight, never rolling 24h.
-   ═════════════════════════════════════════════════════════════ */
-const midnight = t => { const d = new Date(t); d.setHours(0,0,0,0); return d.getTime(); };
-const daysBetween = (a,b) => Math.round((midnight(b) - midnight(a)) / 86400000);
-const ms = t => new Date(t).getTime();          // ALWAYS compare times numerically
-
-/* ═════════════════════════════════════════════════════════════
-   TOPIC NAMES — §6. Fails silently if wrong, so it is first.
-   ═════════════════════════════════════════════════════════════ */
-function normalise(s){
-  return String(s).trim().toLowerCase().replace(/\s+/g,' ').replace(/\./g,'').trim();
+/* ══════════════════ TIME ══════════════════ */
+const midnight=t=>{const d=new Date(t);d.setHours(0,0,0,0);return d.getTime();};
+const dayGap=(a,b)=>Math.round((midnight(b)-midnight(a))/DAY);
+const ms=t=>new Date(t).getTime();
+function fmtDate(t){
+  const g=dayGap(t,Date.now());
+  if(g===0)return'Today'; if(g===1)return'Yesterday';
+  const d=new Date(t), M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return d.getDate()+' '+M[d.getMonth()]+(d.getFullYear()!==new Date().getFullYear()?" '"+String(d.getFullYear()).slice(2):'');
 }
-const clean = s => String(s).trim().replace(/\s+/g,' ');
 
-function rebuild(){
-  topics = new Map();
-  for (const e of entries){
-    const t = topics.get(e.topicKey);
-    if (t) t.count++;
-    else topics.set(e.topicKey, { topic:e.topic, subject:e.subject, count:1 });
+/* ══════════════════ TOPIC NAMES ══════════════════ */
+const normalise=s=>String(s).trim().toLowerCase().replace(/\s+/g,' ').replace(/\./g,'').trim();
+const clean=s=>String(s).trim().replace(/\s+/g,' ');
+
+/* ══════════════════ STORAGE ══════════════════ */
+function openDB(){return new Promise((res,rej)=>{
+  if(!('indexedDB'in window))return rej(new Error('unsupported'));
+  const r=indexedDB.open('mistakeLog',1);
+  r.onupgradeneeded=ev=>{const d=ev.target.result;
+    if(!d.objectStoreNames.contains('entries')){const s=d.createObjectStore('entries',{keyPath:'id'});
+      s.createIndex('topicKey','topicKey');s.createIndex('created','created');}
+    if(!d.objectStoreNames.contains('meta'))d.createObjectStore('meta',{keyPath:'key'});};
+  r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error);});}
+const readAll=()=>new Promise((res,rej)=>{const r=db.transaction('entries','readonly').objectStore('entries').getAll();
+  r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error);});
+const readMeta=()=>new Promise(res=>{const r=db.transaction('meta','readonly').objectStore('meta').getAll();
+  r.onsuccess=()=>{const o={};(r.result||[]).forEach(x=>o[x.key]=x.value);res(o);};r.onerror=()=>res({});});
+const metaSet=(k,v)=>new Promise(res=>{meta[k]=v;const tx=db.transaction('meta','readwrite');
+  tx.objectStore('meta').put({key:k,value:v});tx.oncomplete=res;tx.onerror=res;});
+const putMany=list=>new Promise((res,rej)=>{if(!list.length)return res();
+  const tx=db.transaction('entries','readwrite'),st=tx.objectStore('entries');
+  list.forEach(e=>st.put(e));tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error||new Error('abort'));});
+const delOne=id=>new Promise((res,rej)=>{const tx=db.transaction('entries','readwrite');
+  tx.objectStore('entries').delete(id);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);});
+const wipeAll=()=>new Promise((res,rej)=>{const tx=db.transaction(['entries','meta'],'readwrite');
+  tx.objectStore('entries').clear();tx.objectStore('meta').clear();tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);});
+function uuid(){if(window.crypto&&crypto.randomUUID)return crypto.randomUUID();
+  return'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&3|8)).toString(16);});}
+
+/* ══════════════════ TICKS & REPEAT FLAG ══════════════════
+   A tick is green for tickLifeDays CALENDAR days: placed on
+   day D it is green through D+29 and grey from 00:00 on D+30.
+   The >=0 guard stops a backwards clock making a tick immortal. */
+const lastTick=e=>(e.revisions&&e.revisions.length)?e.revisions[e.revisions.length-1]:null;
+function liveAt(iso,at){const g=dayGap(iso,at);return g>=0&&g<SCORING.tickLifeDays;}
+const isLive=e=>{const t=lastTick(e);return t?liveAt(t,Date.now()):false;};
+/* Was ANY tick in this topic live at moment `at`? Checks every tick,
+   not just the latest — an entry may hold several. */
+function flagFor(list,at){
+  const T=ms(at);
+  return list.some(x=>(x.revisions||[]).some(r=>ms(r)<T&&liveAt(r,T)));
+}
+/* Re-check after un-tick / delete / topic move. Compares against every
+   tick STILL remaining anywhere in the topic. */
+function recheck(key){
+  const list=entries.filter(e=>e.topicKey===key);
+  const out=[];
+  for(const e of list){
+    const want=flagFor(list.filter(x=>x!==e),e.created);
+    if(e.repeatWhileFresh!==want){e.repeatWhileFresh=want;out.push(e);}
   }
+  return out;
 }
 
-/* Step 2 replaces this ordering with topic score. Until scoring
-   exists, entry count is the only signal available. */
-function suggestFor(raw){
-  const q = normalise(raw);
-  if (!q) return [];
-  const all = [];
-  topics.forEach((v,key) => all.push({ key, ...v }));
-  const by = (a,b) => b.count - a.count || a.topic.localeCompare(b.topic);
-  const pre = all.filter(t => t.key.startsWith(q)).sort(by);
-  const sub = all.filter(t => !t.key.startsWith(q) && t.key.includes(q)).sort(by);
+/* ══════════════════ SCORING ══════════════════ */
+function ageMult(iso,now){const d=Math.max(0,dayGap(iso,now));
+  for(const b of SCORING.age)if(d<=b.maxDays)return b.mult;return 0.25;}
+function materialShare(e){const tot=e.types.length;if(!tot)return 0;
+  return e.types.filter(c=>MATERIAL.includes(c)).length/tot;}
+function entryWeight(e,now){
+  return ageMult(e.created,now)
+    *(isLive(e)?SCORING.revisedMult:1)
+    *(e.repeatWhileFresh?SCORING.repeatMult:1)
+    *materialShare(e);
+}
+/* Decay: halve once per 90-day block since the last repeat, but ONLY
+   for blocks containing a tick. Silence alone never decays. */
+function decayed(list,now){
+  const reps=list.filter(e=>e.repeatWhileFresh);
+  if(!reps.length)return 0;
+  let cursor=Math.max.apply(null,reps.map(e=>ms(e.created)));
+  const ticks=[];list.forEach(e=>(e.revisions||[]).forEach(r=>ticks.push(ms(r))));
+  let c=reps.length,g=0,W=SCORING.decayWindowDays*DAY;
+  while(cursor+W<=now&&c>SCORING.decayFloor&&g++<400){
+    const end=cursor+W;
+    if(ticks.some(t=>t>cursor&&t<=end))c=Math.max(c/2,SCORING.decayFloor);
+    cursor=end;
+  }
+  return c;
+}
+function recompute(){
+  const now=Date.now();
+  tmap=new Map();
+  for(const e of entries){
+    let t=tmap.get(e.topicKey);
+    if(!t){t={key:e.topicKey,topic:e.topic,subject:e.subject,list:[]};tmap.set(e.topicKey,t);}
+    t.list.push(e);
+  }
+  tmap.forEach(t=>{
+    t.count=t.list.length;
+    t.lifetime=t.list.filter(e=>e.repeatWhileFresh).length;
+    t.decay=decayed(t.list,now);
+    t.mult=1+t.decay*SCORING.repeatStep;
+    let sum=0,rec=0;
+    for(const e of t.list){
+      const w=entryWeight(e,now); sum+=w;
+      if(dayGap(e.created,now)<=SCORING.recentWindowDays)rec+=w;
+    }
+    t.score=sum*t.mult; t.recent=rec;
+    t.open=t.list.filter(e=>!isLive(e)).length;
+    t.newest=Math.max.apply(null,t.list.map(e=>ms(e.created)));
+  });
+}
+const topicsSorted=()=>Array.from(tmap.values()).sort((a,b)=>b.score-a.score||b.count-a.count);
+
+/* ══════════════════ SHARED FORM PIECES ══════════════════ */
+function buildChips(mC,rC,set,onChange){
+  const mk=t=>{const b=document.createElement('button');
+    b.type='button';b.className='chip';b.dataset.code=t.code;b.textContent=t.label;
+    b.setAttribute('aria-pressed',set.has(t.code)?'true':'false');
+    b.addEventListener('click',()=>{set.has(t.code)?set.delete(t.code):set.add(t.code);
+      b.setAttribute('aria-pressed',set.has(t.code)?'true':'false');onChange();});
+    return b;};
+  mC.innerHTML='';rC.innerHTML='';
+  TYPES.filter(t=>MATERIAL.includes(t.code)).forEach(t=>mC.appendChild(mk(t)));
+  TYPES.filter(t=>READING.includes(t.code)).forEach(t=>rC.appendChild(mk(t)));
+}
+function suggestFor(raw,excludeKey){
+  const q=normalise(raw); if(!q)return[];
+  const all=[];tmap.forEach(t=>{if(t.key!==excludeKey)all.push(t);});
+  const by=(a,b)=>b.score-a.score||b.count-a.count;   /* §6: score, not count */
+  const pre=all.filter(t=>t.key.startsWith(q)).sort(by);
+  const sub=all.filter(t=>!t.key.startsWith(q)&&t.key.includes(q)).sort(by);
   return pre.concat(sub).slice(0,8);
 }
-
-/* ═════════════════════════════════════════════════════════════
-   STORAGE — §5
-   ═════════════════════════════════════════════════════════════ */
-function openDB(){
-  return new Promise((res,rej)=>{
-    if (!('indexedDB' in window)) return rej(new Error('unsupported'));
-    const r = indexedDB.open('mistakeLog',1);
-    r.onupgradeneeded = ev => {
-      const d = ev.target.result;
-      if (!d.objectStoreNames.contains('entries')){
-        const s = d.createObjectStore('entries',{keyPath:'id'});
-        s.createIndex('topicKey','topicKey');
-        s.createIndex('created','created');
-      }
-      if (!d.objectStoreNames.contains('meta')) d.createObjectStore('meta',{keyPath:'key'});
-    };
-    r.onsuccess = () => res(r.result);
-    r.onerror   = () => rej(r.error);
-  });
+function drawSugs(box,list,onPick){
+  box.innerHTML='';
+  list.forEach(s=>{const d=document.createElement('div');d.className='sug';d.setAttribute('role','option');
+    const n=document.createElement('span');n.className='nm';n.textContent=s.topic;
+    const b=document.createElement('span');b.className='sb';b.textContent=s.subject;
+    const c=document.createElement('span');c.className='ct';c.textContent=s.count;
+    d.append(n,b,c);d.addEventListener('mousedown',ev=>{ev.preventDefault();onPick(s);});
+    box.appendChild(d);});
 }
-const readAll = () => new Promise((res,rej)=>{
-  const r = db.transaction('entries','readonly').objectStore('entries').getAll();
-  r.onsuccess = () => res(r.result||[]); r.onerror = () => rej(r.error);
-});
-const readMeta = () => new Promise(res=>{
-  const r = db.transaction('meta','readonly').objectStore('meta').getAll();
-  r.onsuccess = () => { const o={}; (r.result||[]).forEach(x=>o[x.key]=x.value); res(o); };
-  r.onerror   = () => res({});
-});
-const metaSet = (k,v) => new Promise(res=>{
-  meta[k]=v;
-  const tx = db.transaction('meta','readwrite');
-  tx.objectStore('meta').put({key:k,value:v});
-  tx.oncomplete=res; tx.onerror=res;
-});
-const addOne = e => new Promise((res,rej)=>{
-  const tx = db.transaction('entries','readwrite');
-  tx.objectStore('entries').add(e);
-  tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error); tx.onabort=()=>rej(tx.error||new Error('abort'));
-});
-/* Import is ONE transaction — 300 of 400 written is not an option. */
-const addMany = list => new Promise((res,rej)=>{
-  if (!list.length) return res();
-  const tx = db.transaction('entries','readwrite');
-  const st = tx.objectStore('entries');
-  list.forEach(e => st.put(e));
-  tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error); tx.onabort=()=>rej(tx.error||new Error('abort'));
-});
-const wipe = () => new Promise((res,rej)=>{
-  const tx = db.transaction(['entries','meta'],'readwrite');
-  tx.objectStore('entries').clear(); tx.objectStore('meta').clear();
-  tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error);
-});
+function subjectFor(val,pending){
+  const key=normalise(val);
+  if(!key)return{mode:'empty',subject:null};
+  const known=tmap.get(key);
+  if(known)return{mode:'locked',subject:known.subject};
+  return{mode:'choose',subject:pending};
+}
+function drawSubrow(row,val,pending,onOpen){
+  const s=subjectFor(val,pending); row.innerHTML='';
+  if(s.mode==='empty'){const p=document.createElement('span');p.className='subempty';
+    p.textContent='Subject fills in once you pick a topic';row.appendChild(p);return s;}
+  if(s.mode==='locked'){const p=document.createElement('span');p.className='sublocked';
+    p.innerHTML='Subject &middot; <b></b>';p.querySelector('b').textContent=s.subject;row.appendChild(p);return s;}
+  const b=document.createElement('button');b.type='button';b.className='subpick';
+  b.textContent=s.subject?s.subject+'  ·  change':'Choose subject';
+  b.addEventListener('click',onOpen);row.appendChild(b);return s;
+}
 
-function uuid(){
-  if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{
-    const r = Math.random()*16|0; return (c==='x'?r:(r&0x3|0x8)).toString(16);
+/* ══════════════════ SHEETS ══════════════════ */
+function openSheet(id){$(id).hidden=false;}
+function closeSheet(id){$(id).hidden=true;}
+document.querySelectorAll('[data-close]').forEach(x=>x.addEventListener('click',e=>{
+  e.currentTarget.closest('.sheet').hidden=true;}));
+
+let subjectCB=null;
+function pickSubject(cb){
+  subjectCB=cb; const g=$('subgrid'); g.innerHTML='';
+  SUBJECTS.forEach(name=>{const b=document.createElement('button');
+    b.type='button';b.className='subchip';b.textContent=name;
+    b.addEventListener('click',()=>{closeSheet('sheetSub');subjectCB&&subjectCB(name);});
+    g.appendChild(b);});
+  openSheet('sheetSub');
+}
+function ask(text,yes){
+  return new Promise(res=>{
+    $('askText').textContent=text; $('askYes').textContent=yes||'Yes';
+    const done=v=>{closeSheet('sheetAsk');$('askYes').onclick=null;$('askNo').onclick=null;res(v);};
+    $('askYes').onclick=()=>done(true); $('askNo').onclick=()=>done(false);
+    openSheet('sheetAsk');
   });
 }
 
-/* ═════════════════════════════════════════════════════════════
-   REPEAT FLAG — §8. Decided once at save, then stored forever.
-   No ticks exist in step 1, so this is always false — but the
-   rule lives here so step 2 doesn't reinvent it.
-   ═════════════════════════════════════════════════════════════ */
-const lastTick = e => (e.revisions && e.revisions.length) ? e.revisions[e.revisions.length-1] : null;
-function isLive(e, at){
-  const t = lastTick(e); if (!t) return false;
-  const gap = midnight(at) - midnight(t);
-  return gap >= 0 && gap <= SCORING.tickLifeDays * 86400000;   // >=0 guards a backwards clock
+/* ══════════════════ LOG SCREEN ══════════════════ */
+function refreshSave(){
+  const s=subjectFor($('topic').value,pendingSubject);
+  $('save').disabled=saving||readFailed||!normalise($('topic').value)||!s.subject||picked.size===0;
 }
-function flagAt(topicKey, at){
-  return entries.some(e => e.topicKey === topicKey && isLive(e, at) && ms(lastTick(e)) < ms(at));
-}
+function drawLogSubrow(){drawSubrow($('subrow'),$('topic').value,pendingSubject,
+  ()=>pickSubject(n=>{pendingSubject=n;drawLogSubrow();refreshSave();}));}
 
-/* ═════════════════════════════════════════════════════════════
-   RENDER
-   ═════════════════════════════════════════════════════════════ */
-function buildChips(){
-  const mk = t => {
-    const b = document.createElement('button');
-    b.type='button'; b.className='chip'; b.dataset.code=t.code;
-    b.textContent=t.label; b.setAttribute('aria-pressed','false');
-    b.addEventListener('click',()=>{
-      picked.has(t.code) ? picked.delete(t.code) : picked.add(t.code);
-      b.setAttribute('aria-pressed', picked.has(t.code)?'true':'false');
-      refresh();
-    });
-    return b;
+async function save(){
+  if(saving||readFailed)return;
+  const typed=clean($('topic').value), key=normalise(typed);
+  const s=subjectFor(typed,pendingSubject);
+  if(!key||!s.subject||picked.size===0)return;
+  const known=tmap.get(key), now=new Date().toISOString();
+  const entry={
+    id:uuid(), created:now,
+    subject:known?known.subject:s.subject,        /* §7 subject belongs to the topic */
+    topic:known?known.topic:typed,                /* §6 canonical spelling wins */
+    topicKey:key,
+    types:TYPES.filter(t=>picked.has(t.code)).map(t=>t.code),
+    note:$('note').value.trim(), revisions:[],
+    repeatWhileFresh:flagFor(known?known.list:[],now)   /* §8 decided once, stored */
   };
-  TYPES.filter(t=>MATERIAL.includes(t.code)).forEach(t=>el.chipsM.appendChild(mk(t)));
-  TYPES.filter(t=>READING.includes(t.code)).forEach(t=>el.chipsR.appendChild(mk(t)));
+  saving=true;
+  const wasRepeat=entry.repeatWhileFresh, tName=entry.topic;
+  clearForm(); $('topic').focus();
+  try{
+    await putMany([entry]); entries.push(entry); recompute(); drawAll();
+    toast(wasRepeat?'Repeat in '+tName:'Saved',wasRepeat?4000:1400);
+  }catch(err){
+    $('lost').hidden=false;
+    $('lost').innerHTML='<b>Not saved.</b> '+esc(entry.topic)+' — '+entry.types.map(c=>esc(LABEL[c])).join(', ')+
+      '. Storage refused the write ('+esc(err&&err.name?err.name:'unknown')+'). Log it again before closing the app.';
+  }finally{saving=false;refreshSave();}
+}
+function clearForm(){
+  $('topic').value='';$('note').value='';
+  $('notewrap').hidden=true;$('addnote').hidden=false;$('ncount').hidden=true;
+  picked.clear();pendingSubject=null;
+  $('chipsM').querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed','false'));
+  $('chipsR').querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed','false'));
+  sugs=[];drawSugs($('suggest'),[],()=>{});drawLogSubrow();refreshSave();
 }
 
-function currentSubject(){
-  const key = normalise(el.topic.value);
-  if (!key) return { mode:'empty', subject:null };
-  const known = topics.get(key);
-  if (known) return { mode:'locked', subject:known.subject };
-  return { mode:'choose', subject:pendingSubject };
+/* ══════════════════ TICKING ══════════════════ */
+async function applyTicks(list){
+  if(!list.length)return;
+  const now=new Date().toISOString();
+  list.forEach(e=>{e.revisions=(e.revisions||[]).concat(now);});
+  await putMany(list); recompute(); drawAll();
 }
-
-function drawSubject(){
-  const s = currentSubject();
-  el.subrow.innerHTML='';
-  if (s.mode==='empty'){
-    const p=document.createElement('span'); p.className='subempty'; p.textContent='Subject fills in once you pick a topic';
-    el.subrow.appendChild(p); return;
+async function tickTopic(t){
+  const newest=t.list.reduce((a,e)=>{const x=lastTick(e);return x&&ms(x)>a?ms(x):a;},0);
+  if(newest&&dayGap(newest,Date.now())===0)return;   /* guard: already ticked today */
+  if(!await ask('Have you revised '+t.topic+' properly?','Yes, I revised it'))return;
+  await applyTicks(t.list.slice());
+  toast(t.topic+' marked revised');
+}
+async function tickSubject(name){
+  const ts=Array.from(tmap.values()).filter(t=>t.subject===name);
+  if(!ts.length)return;
+  const all=ts.reduce((a,t)=>a.concat(t.list),[]);
+  const newest=all.reduce((a,e)=>{const x=lastTick(e);return x&&ms(x)>a?ms(x):a;},0);
+  if(newest&&dayGap(newest,Date.now())===0)return;
+  if(!await ask('Are you sure you revised the entire subject? This will mark '+ts.length+
+    (ts.length===1?' topic':' topics')+' and '+all.length+
+    (all.length===1?' mistake':' mistakes')+' as revised.','Yes, mark all revised'))return;
+  await applyTicks(all);
+  toast(name+' marked revised');
+}
+async function toggleEntry(e){
+  if(isLive(e)){                                   /* un-tick: mis-tap only */
+    e.revisions=(e.revisions||[]).slice(0,-1);
+    const changed=recheck(e.topicKey);
+    await putMany([e].concat(changed.filter(x=>x!==e)));
+  } else {
+    e.revisions=(e.revisions||[]).concat(new Date().toISOString());
+    await putMany([e]);
   }
-  if (s.mode==='locked'){
-    const p=document.createElement('span'); p.className='sublocked';
-    p.innerHTML='Subject &middot; <b></b>'; p.querySelector('b').textContent=s.subject;
-    el.subrow.appendChild(p); return;
-  }
-  const b=document.createElement('button');
-  b.type='button'; b.className='subpick';
-  b.textContent = s.subject ? s.subject + '  ·  change' : 'Choose subject';
-  b.addEventListener('click',openSheet);
-  el.subrow.appendChild(b);
+  recompute(); drawAll();
 }
 
-function drawSuggest(){
-  el.suggest.innerHTML='';
-  sugs.forEach(s=>{
-    const d=document.createElement('div'); d.className='sug'; d.setAttribute('role','option');
-    const n=document.createElement('span'); n.className='nm'; n.textContent=s.topic;
-    const b=document.createElement('span'); b.className='sb'; b.textContent=s.subject;
-    const c=document.createElement('span'); c.className='ct'; c.textContent=s.count;
-    d.append(n,b,c);
-    d.addEventListener('mousedown',ev=>{ev.preventDefault();pick(s);});
-    el.suggest.appendChild(d);
+/* ══════════════════ EDIT SHEET ══════════════════ */
+function openEdit(e){
+  editing=e; ePicked=new Set(e.types); ePending=null; eSugs=[];
+  $('eTopic').value=e.topic; $('eNote').value=e.note||'';
+  buildChips($('eChipsM'),$('eChipsR'),ePicked,()=>{});
+  drawESub();
+  const t=lastTick(e);
+  $('eTickInfo').textContent=t?(isLive(t)||liveAt(t,Date.now())?'Revised '+fmtDate(t).toLowerCase()+' · green':'Revised '+dayGap(t,Date.now())+' days ago · grey'):'Never revised';
+  $('eUntick').hidden=!(e.revisions&&e.revisions.length);
+  drawSugs($('eSuggest'),[],()=>{});
+  openSheet('sheetEdit');
+}
+function drawESub(){
+  const key=normalise($('eTopic').value);
+  const known=tmap.get(key);
+  const row=$('eSubrow'); row.innerHTML='';
+  if(known&&editing&&key===editing.topicKey){
+    const b=document.createElement('button');b.type='button';b.className='subpick';
+    b.textContent=(ePending||known.subject)+'  ·  change whole topic';
+    b.addEventListener('click',()=>pickSubject(n=>{ePending=n;drawESub();}));
+    row.appendChild(b); return;
+  }
+  drawSubrow(row,$('eTopic').value,ePending,()=>pickSubject(n=>{ePending=n;drawESub();}));
+}
+async function saveEdit(){
+  if(!editing)return;
+  const typed=clean($('eTopic').value), key=normalise(typed);
+  if(!key||!ePicked.size)return toast('Needs a topic and at least one type.');
+  const s=subjectFor(typed,ePending);
+  if(!s.subject)return toast('Pick a subject.');
+  const oldKey=editing.topicKey;
+  const known=tmap.get(key);
+  const moved=key!==oldKey;
+  const touched=[editing];
+
+  editing.types=TYPES.filter(t=>ePicked.has(t.code)).map(t=>t.code);
+  editing.note=$('eNote').value.trim();
+  editing.topic=known&&!moved?known.topic:(known?known.topic:typed);
+  editing.topicKey=key;
+
+  if(!moved&&ePending&&ePending!==editing.subject){
+    /* §7: changing a topic's subject moves EVERY entry in that topic */
+    entries.filter(x=>x.topicKey===key).forEach(x=>{x.subject=ePending;if(!touched.includes(x))touched.push(x);});
+  } else {
+    editing.subject=known?known.subject:s.subject;
+  }
+  if(moved){
+    editing.subject=known?known.subject:s.subject;
+    recheck(oldKey).forEach(x=>{if(!touched.includes(x))touched.push(x);});
+    const list=entries.filter(x=>x.topicKey===key&&x!==editing);
+    editing.repeatWhileFresh=flagFor(list,editing.created);
+  }
+  await putMany(touched);
+  closeSheet('sheetEdit'); editing=null; recompute(); drawAll(); toast('Updated');
+}
+async function deleteEdit(){
+  if(!editing)return;
+  if(!await ask("Delete this entry — it wasn't a real mistake?",'Delete'))return;
+  const key=editing.topicKey, id=editing.id;
+  await delOne(id);
+  entries=entries.filter(x=>x.id!==id);
+  const changed=recheck(key);
+  if(changed.length)await putMany(changed);
+  closeSheet('sheetEdit'); editing=null; recompute(); drawAll(); toast('Deleted');
+}
+async function untickEdit(){
+  if(!editing||!editing.revisions.length)return;
+  editing.revisions=editing.revisions.slice(0,-1);
+  const changed=recheck(editing.topicKey);
+  await putMany([editing].concat(changed.filter(x=>x!==editing)));
+  const t=lastTick(editing);
+  $('eTickInfo').textContent=t?'Revised '+dayGap(t,Date.now())+' days ago':'Never revised';
+  $('eUntick').hidden=!editing.revisions.length;
+  recompute(); drawAll(); toast('Tick removed');
+}
+
+/* ══════════════════ TOPIC LIST RENDER ══════════════════ */
+const tickSVG='<svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>';
+function topicRow(t,mode){
+  const row=document.createElement('div');row.className='trow';
+  const head=document.createElement('div');head.className='thead';
+  const main=document.createElement('div');main.className='tmain';
+  const nm=document.createElement('div');nm.className='tname';nm.textContent=t.topic;
+  const mt=document.createElement('div');mt.className='tmeta';
+  const bits=[];
+  bits.push('<span>'+esc(t.subject)+'</span>');
+  bits.push('<span>'+t.count+(t.count===1?' mistake':' mistakes')+'</span>');
+  if(t.lifetime)bits.push('<span class="rep">'+t.lifetime+(t.lifetime===1?' repeat':' repeats')+'</span>');
+  if(t.count>=SCORING.splitWarnAt)bits.push('<span class="warn">consider splitting this topic</span>');
+  mt.innerHTML=bits.join('');
+  main.append(nm,mt);
+
+  const st=t.list.every(e=>isLive(e))?'live':(t.list.some(e=>lastTick(e))?'grey':'');
+  const tk=document.createElement('button');tk.className='tick '+st;tk.innerHTML=tickSVG;
+  tk.setAttribute('aria-label','Mark '+t.topic+' revised');
+  tk.addEventListener('click',ev=>{ev.stopPropagation();tickTopic(t);});
+
+  head.append(main,tk);
+  head.addEventListener('click',()=>{
+    expanded.has(t.key)?expanded.delete(t.key):expanded.add(t.key);drawAll();});
+  row.appendChild(head);
+
+  if(expanded.has(t.key)){
+    const body=document.createElement('div');body.className='tbody';
+    const rank=e=>isLive(e)?1:(lastTick(e)?2:0);
+    const list=t.list.slice().sort((a,b)=>rank(a)-rank(b)||ms(b.created)-ms(a.created));
+    const cap=showAll.has(t.key)?list.length:Math.min(list.length,SCORING.expandCap);
+    list.slice(0,cap).forEach(e=>body.appendChild(entryRow(e)));
+    if(list.length>cap){
+      const b=document.createElement('button');b.className='showall';
+      b.textContent='show all '+list.length;
+      b.addEventListener('click',()=>{showAll.add(t.key);drawAll();});
+      body.appendChild(b);
+    }
+    row.appendChild(body);
+  }
+  return row;
+}
+function entryRow(e){
+  const d=document.createElement('div');d.className='ent';
+  const tk=document.createElement('button');
+  const t=lastTick(e);
+  tk.className='etick '+(isLive(e)?'live':(t?'grey':''));
+  tk.innerHTML=tickSVG;
+  tk.setAttribute('aria-label',isLive(e)?'Un-tick':'Mark revised');
+  tk.addEventListener('click',ev=>{ev.stopPropagation();toggleEntry(e);});
+  const body=document.createElement('div');body.className='ebody';
+  const line=document.createElement('div');line.className='eline';
+  const n=document.createElement('span');n.className='enote'+(e.note?'':' none');
+  n.innerHTML=(e.repeatWhileFresh?'<span class="rdot"></span>':'')+esc(e.note||'no note');
+  const dt=document.createElement('span');dt.className='edate';dt.textContent=fmtDate(e.created);
+  line.append(n,dt);
+  const tags=document.createElement('div');tags.className='etags';
+  e.types.forEach(c=>{const x=document.createElement('span');
+    x.className='tag'+(READING.includes(c)?' r':'');x.textContent=LABEL[c]||c;tags.appendChild(x);});
+  body.append(line,tags);
+  if(t&&!isLive(e)){const a=document.createElement('div');a.className='eaged';
+    a.textContent='revised '+dayGap(t,Date.now())+' days ago';body.appendChild(a);}
+  body.addEventListener('click',()=>openEdit(e));
+  d.append(tk,body);
+  return d;
+}
+
+/* ══════════════════ SCREENS ══════════════════ */
+function drawRanked(){
+  const box=$('rankList');box.innerHTML='';
+  $('search').hidden=entries.length<SCORING.searchMinEntries;
+  let all=topicsSorted();
+  const hidden=all.filter(t=>t.score===0);
+  let list=all.filter(t=>t.score>0);
+  if(query){const q=normalise(query);
+    list=list.filter(t=>t.key.includes(q)||t.list.some(e=>normalise(e.note).includes(q)));}
+  if(!entries.length){box.innerHTML='<p class="empty">Nothing logged yet.</p>';}
+  else if(!list.length){box.innerHTML='<p class="empty">'+(query?'Nothing matches "'+esc(query)+'"':'Nothing to rank yet.')+'</p>';}
+  else list.forEach(t=>box.appendChild(topicRow(t,'ranked')));
+
+  const hf=$('hideFoot');
+  if(hidden.length&&!query){
+    hf.hidden=false;
+    hf.textContent=showHidden?'hide them again':hidden.length+(hidden.length===1?' topic hidden — reading mistakes only':' topics hidden — reading mistakes only');
+    if(showHidden)hidden.forEach(t=>box.appendChild(topicRow(t,'ranked')));
+  } else hf.hidden=true;
+
+  const now=Date.now();
+  const win=entries.filter(e=>dayGap(e.created,now)<=SCORING.readingPanelDays);
+  const p=$('readPanel');
+  p.innerHTML='<h2>Reading mistakes · last 30 days</h2>';
+  READING.forEach(c=>{
+    const n=win.filter(e=>e.types.includes(c)).length;
+    const r=document.createElement('div');r.className='prow';
+    r.innerHTML='<span>'+esc(LABEL[c])+'</span><span class="n">'+n+'</span>';
+    p.appendChild(r);
   });
+  const h=document.createElement('p');h.className='hint';h.style.marginTop='10px';
+  h.textContent='Rereading a chapter will never stop you missing the word "except". These are not in the ranking.';
+  p.appendChild(h);
+  drawNag();
 }
-
-function pick(s){
-  el.topic.value = s.topic;
-  sugs=[]; drawSuggest(); drawSubject(); refresh();
-  const f=document.querySelector('.chip'); if (f) f.focus();
-}
-
-function refresh(){
-  const s = currentSubject();
-  el.save.disabled = saving || readFailed || !normalise(el.topic.value) || !s.subject || picked.size===0;
-}
-
 function drawRecent(){
-  if (!entries.length){
-    el.rhead.textContent='Nothing logged yet';
-    el.rlist.innerHTML='<p class="empty">Type a topic above. Five mistakes from one block should take about a minute.</p>';
+  const box=$('recentList');box.innerHTML='';
+  const now=Date.now();
+  const list=topicsSorted().filter(t=>t.recent>0).sort((a,b)=>b.recent-a.recent);
+  if(!list.length){box.innerHTML='<p class="empty">Nothing in the last 90 days.</p>';return;}
+  list.forEach(t=>box.appendChild(topicRow(t,'recent')));
+}
+function drawSubjects(){
+  const head=$('subjHead'),box=$('subjList');head.innerHTML='';box.innerHTML='';
+  if(openSubject){
+    const b=document.createElement('button');b.className='tab on';b.textContent='← '+openSubject;
+    b.style.marginBottom='12px';
+    b.addEventListener('click',()=>{openSubject=null;drawAll();});
+    head.appendChild(b);
+    const list=topicsSorted().filter(t=>t.subject===openSubject);
+    if(!list.length)box.innerHTML='<p class="empty">Nothing logged in '+esc(openSubject)+'.</p>';
+    else list.forEach(t=>box.appendChild(topicRow(t,'subject')));
     return;
   }
-  el.rhead.textContent = entries.length + (entries.length===1?' mistake':' mistakes') +
-                         ' · ' + topics.size + (topics.size===1?' topic':' topics');
-  const recent = entries.slice().sort((a,b)=>ms(b.created)-ms(a.created)).slice(0,25);
-  el.rlist.innerHTML='';
-  for (const e of recent){
-    const row=document.createElement('div'); row.className='entry';
-    const top=document.createElement('div'); top.className='etop';
-    const t=document.createElement('span'); t.className='t'; t.textContent=e.topic;
-    const s=document.createElement('span'); s.className='s'; s.textContent=e.subject;
-    top.append(t,s); row.appendChild(top);
-    if (e.note){ const n=document.createElement('div'); n.className='enote'; n.textContent=e.note; row.appendChild(n); }
-    const tags=document.createElement('div'); tags.className='etags';
-    e.types.forEach(c=>{
-      const x=document.createElement('span');
-      x.className='tag'+(READING.includes(c)?' r':'');
-      x.textContent=LABEL[c]||c; tags.appendChild(x);
-    });
-    row.appendChild(tags); el.rlist.appendChild(row);
-  }
-}
-
-let tt=null;
-function toast(msg,dur){
-  el.toast.textContent=msg; el.toast.classList.add('on');
-  clearTimeout(tt); tt=setTimeout(()=>el.toast.classList.remove('on'), dur||1700);
-}
-
-/* ═════════════════════════════════════════════════════════════
-   SUBJECT SHEET
-   ═════════════════════════════════════════════════════════════ */
-function openSheet(){
-  el.subgrid.innerHTML='';
-  SUBJECTS.forEach(name=>{
-    const b=document.createElement('button');
-    b.type='button'; b.className='subchip'; b.textContent=name;
-    b.addEventListener('click',()=>{
-      pendingSubject=name; closeSheet(); drawSubject(); refresh();
-    });
-    el.subgrid.appendChild(b);
+  const agg=SUBJECTS.map(name=>{
+    const ts=Array.from(tmap.values()).filter(t=>t.subject===name);
+    return{name,ts,score:ts.reduce((a,t)=>a+t.score,0),
+      count:ts.reduce((a,t)=>a+t.count,0),
+      reps:ts.reduce((a,t)=>a+t.lifetime,0)};
+  }).filter(s=>s.count>0).sort((a,b)=>b.score-a.score||b.count-a.count);
+  if(!agg.length){box.innerHTML='<p class="empty">Nothing logged yet.</p>';return;}
+  agg.forEach(s=>{
+    const row=document.createElement('div');row.className='trow';
+    const head2=document.createElement('div');head2.className='thead';
+    const main=document.createElement('div');main.className='tmain';
+    const nm=document.createElement('div');nm.className='tname';nm.textContent=s.name;
+    const mt=document.createElement('div');mt.className='tmeta';
+    const bits=['<span>'+s.ts.length+(s.ts.length===1?' topic':' topics')+'</span>',
+                '<span>'+s.count+(s.count===1?' mistake':' mistakes')+'</span>'];
+    if(s.reps)bits.push('<span class="rep">'+s.reps+(s.reps===1?' repeat':' repeats')+'</span>');
+    mt.innerHTML=bits.join('');main.append(nm,mt);
+    const all=s.ts.reduce((a,t)=>a.concat(t.list),[]);
+    const st=all.length&&all.every(e=>isLive(e))?'live':(all.some(e=>lastTick(e))?'grey':'');
+    const tk=document.createElement('button');tk.className='tick '+st;tk.innerHTML=tickSVG;
+    tk.setAttribute('aria-label','Mark '+s.name+' revised');
+    tk.addEventListener('click',ev=>{ev.stopPropagation();tickSubject(s.name);});
+    head2.append(main,tk);
+    head2.addEventListener('click',()=>{openSubject=s.name;drawAll();});
+    row.appendChild(head2);box.appendChild(row);
   });
-  el.sheet.hidden=false;
-}
-function closeSheet(){ el.sheet.hidden=true; }
-el.scrim.addEventListener('click',closeSheet);
-
-/* ═════════════════════════════════════════════════════════════
-   SAVE
-   ═════════════════════════════════════════════════════════════ */
-async function save(){
-  if (saving || readFailed) return;                 // double-tap guard
-  const typed = clean(el.topic.value);
-  const key   = normalise(typed);
-  const s     = currentSubject();
-  if (!key || !s.subject || picked.size===0) return;
-
-  const known = topics.get(key);
-  const now   = new Date().toISOString();
-
-  const entry = {
-    id: uuid(),
-    created: now,
-    subject: known ? known.subject : s.subject,     // §7 subject belongs to the topic
-    topic:   known ? known.topic   : typed,         // §6 canonical spelling wins
-    topicKey: key,
-    types: TYPES.filter(t=>picked.has(t.code)).map(t=>t.code),
-    note: el.note.value.trim(),
-    revisions: [],
-    repeatWhileFresh: flagAt(key, now)              // §8 decided once, stored
-  };
-
-  saving = true;
-  const wasRepeat = entry.repeatWhileFresh;
-  const topicName = entry.topic;
-  clearForm();
-  el.topic.focus();                                 // sync, so the keyboard never drops
-
-  try {
-    await addOne(entry);
-    entries.push(entry); rebuild(); drawRecent(); drawSubject();
-    toast(wasRepeat ? 'Repeat in ' + topicName : 'Saved', wasRepeat ? 4000 : 1400);
-  } catch (err) {
-    el.lost.hidden=false;
-    el.lost.innerHTML = '<b>Not saved.</b> ' + esc(entry.topic) + ' — ' +
-      entry.types.map(c=>esc(LABEL[c])).join(', ') +
-      '. Storage refused the write (' + esc(err && err.name ? err.name : 'unknown') +
-      '). Log it again before closing the app.';
-  } finally {
-    saving=false; refresh();
-  }
-}
-const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-
-function clearForm(){
-  el.topic.value=''; el.note.value='';
-  el.notewrap.hidden=true; el.addnote.hidden=false; el.ncount.hidden=true;
-  picked.clear(); pendingSubject=null;
-  document.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed','false'));
-  sugs=[]; drawSuggest(); drawSubject(); refresh();
-}
-
-/* ═════════════════════════════════════════════════════════════
-   EXPORT / IMPORT — §14
-   ═════════════════════════════════════════════════════════════ */
-function localStamp(){
-  const d=new Date(), p=n=>String(n).padStart(2,'0');
-  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());   // local, not UTC
-}
-
-async function doExport(){
-  if (readFailed) return;                            // never overwrite a good backup with nothing
-  if (!entries.length) return;
-  const payload = {
-    app:'mistake-logger', schemaVersion:SCHEMA,
-    exportedAt:new Date().toISOString(),
-    entryCount:entries.length, entries
-  };
-  const blob = new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href=url; a.download='mistake-log-'+localStamp()+'.json';
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),1500);
-  await metaSet('lastExportAt', new Date().toISOString());
-  await metaSet('lastExportCount', entries.length);
-  drawSettings(); drawNag();
-  toast('Saved. Mail it to yourself — a file in Downloads is not a backup.', 5000);
-}
-
-function validEntry(x){
-  if (!x || typeof x!=='object') return null;
-  if (typeof x.id!=='string' || !x.id) return null;
-  if (!x.created || isNaN(ms(x.created))) return null;
-  const topic = typeof x.topic==='string' ? clean(x.topic) : '';
-  if (!topic) return null;
-  if (typeof x.subject!=='string' || !SUBJECTS.includes(x.subject)) return null;
-  const types = Array.isArray(x.types) ? x.types.filter(c=>LABEL[c]) : [];
-  if (!types.length) return null;
-  const revisions = Array.isArray(x.revisions) ? x.revisions.filter(r=>r && !isNaN(ms(r))) : [];
-  return {
-    id:x.id, created:x.created, subject:x.subject,
-    topic, topicKey:normalise(topic),                // never trust a derived field from a file
-    types, note:typeof x.note==='string'?x.note:'',
-    revisions, repeatWhileFresh: x.repeatWhileFresh===true
-  };
-}
-
-async function doImport(file){
-  let raw;
-  try { raw = JSON.parse(await file.text()); }
-  catch { return toast("That file isn't a valid backup.",3500); }
-
-  if (!raw || raw.app!=='mistake-logger') return toast('That backup is from a different app.',3500);
-  if (!Array.isArray(raw.entries))        return toast("That file isn't a valid backup.",3500);
-  const v = Number(raw.schemaVersion);
-  if (!Number.isFinite(v))                return toast("That file isn't a valid backup.",3500);
-  if (v > SCHEMA)                         return toast('This file was made by a newer version of the app.',4000);
-  // v < SCHEMA would migrate here. Nothing to migrate yet.
-
-  const have = new Set(entries.map(e=>e.id));
-  const seen = new Set();
-  let add=[], dupe=0, bad=0;
-  for (const x of raw.entries){
-    const e = validEntry(x);
-    if (!e){ bad++; continue; }
-    if (have.has(e.id) || seen.has(e.id)){ dupe++; continue; }
-    seen.add(e.id); add.push(e);
-  }
-  try { await addMany(add); }
-  catch { return toast('Import failed. Nothing was changed.',4000); }
-
-  entries = entries.concat(add); rebuild(); drawRecent(); drawSettings(); drawSubject();
-  toast('added '+add.length+', skipped '+dupe+' already present, skipped '+bad+' malformed', 5000);
-}
-
-/* ═════════════════════════════════════════════════════════════
-   SETTINGS + NAG
-   ═════════════════════════════════════════════════════════════ */
-function nagDue(){
-  if (!entries.length) return false;
-  const from = meta.lastExportAt || entries.reduce((a,e)=>ms(e.created)<ms(a)?e.created:a, entries[0].created);
-  return daysBetween(from, Date.now()) > SCORING.exportNagDays;
-}
-function drawNag(){
-  const due = nagDue();
-  el.navDot.hidden = !due;
-  el.nag.hidden = !due;
-  if (due){
-    el.nag.innerHTML = meta.lastExportAt
-      ? '<b>Back this up.</b> Last export was ' + daysBetween(meta.lastExportAt, Date.now()) + ' days ago.'
-      : '<b>Back this up.</b> You have never exported.';
-  }
 }
 function drawSettings(){
-  el.stat.textContent = entries.length + (entries.length===1?' mistake':' mistakes') +
-                        ' · ' + topics.size + (topics.size===1?' topic':' topics');
-  el.expWhen.textContent = meta.lastExportAt
-    ? daysBetween(meta.lastExportAt, Date.now()) + 'd ago' : 'never';
-  el.bExport.disabled = !entries.length || readFailed;
+  $('stat').textContent=entries.length+(entries.length===1?' mistake':' mistakes')+
+    ' · '+tmap.size+(tmap.size===1?' topic':' topics');
+  $('expWhen').textContent=meta.lastExportAt?dayGap(meta.lastExportAt,Date.now())+'d ago':'never';
+  $('bExport').disabled=!entries.length||readFailed;
+}
+function nagDue(){
+  if(!entries.length)return false;
+  const from=meta.lastExportAt||entries.reduce((a,e)=>ms(e.created)<ms(a)?e.created:a,entries[0].created);
+  return dayGap(from,Date.now())>SCORING.exportNagDays;
+}
+function drawNag(){
+  const due=nagDue();$('gearDot').hidden=!due;
+  const html=meta.lastExportAt
+    ?'<b>Back this up.</b> Last export was '+dayGap(meta.lastExportAt,Date.now())+' days ago.'
+    :'<b>Back this up.</b> You have never exported.';
+  [['nagR'],['nagS']].forEach(([id])=>{$(id).hidden=!due;if(due)$(id).innerHTML=html;});
+}
+function drawAll(){
+  if(screen==='ranked')drawRanked();
+  else if(screen==='recent')drawRecent();
+  else if(screen==='subjects')drawSubjects();
+  else if(screen==='settings'){drawSettings();drawNag();}
+  else drawNag();
 }
 
-let wipeArmed = false;
+/* ══════════════════ EXPORT / IMPORT ══════════════════ */
+function localStamp(){const d=new Date(),p=n=>String(n).padStart(2,'0');
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
+async function doExport(){
+  if(readFailed||!entries.length)return;
+  const payload={app:'mistake-logger',schemaVersion:SCHEMA,
+    exportedAt:new Date().toISOString(),entryCount:entries.length,entries};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='mistake-log-'+localStamp()+'.json';
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+  await metaSet('lastExportAt',new Date().toISOString());
+  await metaSet('lastExportCount',entries.length);
+  drawSettings();drawNag();
+  toast('Saved. Mail it to yourself — a file in Downloads is not a backup.',5000);
+}
+function validEntry(x){
+  if(!x||typeof x!=='object')return null;
+  if(typeof x.id!=='string'||!x.id)return null;
+  if(!x.created||isNaN(ms(x.created)))return null;
+  const topic=typeof x.topic==='string'?clean(x.topic):'';if(!topic)return null;
+  if(typeof x.subject!=='string'||SUBJECTS.indexOf(x.subject)<0)return null;
+  const types=Array.isArray(x.types)?x.types.filter(c=>LABEL[c]):[];if(!types.length)return null;
+  const revisions=Array.isArray(x.revisions)?x.revisions.filter(r=>r&&!isNaN(ms(r))).sort((a,b)=>ms(a)-ms(b)):[];
+  return{id:x.id,created:x.created,subject:x.subject,topic,
+    topicKey:normalise(topic),                     /* never trust a derived field from a file */
+    types,note:typeof x.note==='string'?x.note:'',
+    revisions,repeatWhileFresh:x.repeatWhileFresh===true};
+}
+async function doImport(file){
+  let raw;
+  try{raw=JSON.parse(await file.text());}catch{return toast("That file isn't a valid backup.",3500);}
+  if(!raw||raw.app!=='mistake-logger')return toast('That backup is from a different app.',3500);
+  if(!Array.isArray(raw.entries))return toast("That file isn't a valid backup.",3500);
+  const v=Number(raw.schemaVersion);
+  if(!Number.isFinite(v))return toast("That file isn't a valid backup.",3500);
+  if(v>SCHEMA)return toast('This file was made by a newer version of the app.',4000);
+  const have=new Set(entries.map(e=>e.id)),seen=new Set();
+  let add=[],dupe=0,bad=0;
+  for(const x of raw.entries){
+    const e=validEntry(x);
+    if(!e){bad++;continue;}
+    if(have.has(e.id)||seen.has(e.id)){dupe++;continue;}
+    seen.add(e.id);add.push(e);
+  }
+  try{await putMany(add);}catch{return toast('Import failed. Nothing was changed.',4000);}
+  entries=entries.concat(add);recompute();drawAll();
+  toast('added '+add.length+', skipped '+dupe+' already present, skipped '+bad+' malformed',5000);
+}
+let wipeArmed=false;
 function armWipe(){
-  if (!wipeArmed){
-    wipeArmed = true;
-    const stale = !meta.lastExportAt || daysBetween(meta.lastExportAt, Date.now()) > SCORING.exportNagDays;
-    $('bWipe').textContent = stale
-      ? 'No recent export — tap again to erase everything'
-      : 'Tap again to erase all ' + entries.length + ' mistakes';
-    setTimeout(()=>{ wipeArmed=false; $('bWipe').textContent='Clear all data'; }, 5000);
+  if(!wipeArmed){
+    wipeArmed=true;
+    const stale=!meta.lastExportAt||dayGap(meta.lastExportAt,Date.now())>SCORING.exportNagDays;
+    $('bWipe').textContent=stale?'No recent export — tap again to erase everything'
+      :'Tap again to erase all '+entries.length+' mistakes';
+    setTimeout(()=>{wipeArmed=false;$('bWipe').textContent='Clear all data';},5000);
     return;
   }
-  wipe().then(()=>{
-    entries=[]; meta={}; rebuild(); drawRecent(); drawSettings(); drawNag(); drawSubject();
-    wipeArmed=false; $('bWipe').textContent='Clear all data';
-    toast('Everything erased.');
-  });
+  wipeAll().then(()=>{entries=[];meta={};recompute();drawAll();drawSettings();
+    wipeArmed=false;$('bWipe').textContent='Clear all data';toast('Everything erased.');});
 }
 
-/* ═════════════════════════════════════════════════════════════
-   NAVIGATION
-   ═════════════════════════════════════════════════════════════ */
-let onSettings=false;
-function go(settings){
-  onSettings=settings;
-  el.scLog.hidden=settings; el.scSet.hidden=!settings;
-  el.crumb.textContent = settings ? 'Settings' : 'Log';
-  $('navIcon').innerHTML = settings
-    ? '<path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>'
-    : '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>';
-  if (settings){ drawSettings(); drawNag(); }
-  else setTimeout(()=>el.topic.focus(),40);
-  window.scrollTo(0,0);
+/* ══════════════════ NAV + TOAST ══════════════════ */
+let tt=null;
+function toast(msg,dur){$('toast').textContent=msg;$('toast').classList.add('on');
+  clearTimeout(tt);tt=setTimeout(()=>$('toast').classList.remove('on'),dur||1700);}
+function go(s){
+  screen=s; if(s!=='subjects')openSubject=null;
+  ['log','ranked','recent','subjects','set'].forEach(k=>{
+    const id='sc'+k.charAt(0).toUpperCase()+k.slice(1);
+    if($(id))$(id).hidden=true;});
+  $({log:'scLog',ranked:'scRanked',recent:'scRecent',subjects:'scSubjects',settings:'scSet'}[s]).hidden=false;
+  document.querySelectorAll('.tab[data-s]').forEach(b=>b.classList.toggle('on',b.dataset.s===s));
+  $('gear').classList.toggle('on',s==='settings');
+  recompute(); drawAll(); window.scrollTo(0,0);
+  if(s==='log')setTimeout(()=>$('topic').focus(),40);
 }
 
-/* ═════════════════════════════════════════════════════════════
-   WIRING
-   ═════════════════════════════════════════════════════════════ */
-el.topic.addEventListener('input',()=>{
-  sugs = suggestFor(el.topic.value); drawSuggest(); drawSubject(); refresh();
-});
-el.topic.addEventListener('blur',()=>setTimeout(()=>{ sugs=[]; drawSuggest(); },140));
-el.topic.addEventListener('keydown',ev=>{
-  if (ev.key==='Enter'){
-    ev.preventDefault();
-    if (sugs.length) pick(sugs[0]);
-    else { sugs=[]; drawSuggest(); const f=document.querySelector('.chip'); if (f) f.focus(); }
-  } else if (ev.key==='Escape'){ sugs=[]; drawSuggest(); }
-});
+/* ══════════════════ WIRING ══════════════════ */
+document.querySelectorAll('.tab[data-s]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.s)));
+$('gear').addEventListener('click',()=>go(screen==='settings'?'log':'settings'));
 
-el.addnote.addEventListener('click',()=>{
-  el.addnote.hidden=true; el.notewrap.hidden=false; el.note.focus();
-});
-el.note.addEventListener('input',()=>{
-  const n=el.note.value.length;
-  if (n > NOTE_CAP-30){
-    el.ncount.hidden=false; el.ncount.textContent=n+' / '+NOTE_CAP;
-    el.ncount.style.color = n>NOTE_CAP ? 'var(--danger)' : 'var(--ink-3)';
-  } else el.ncount.hidden=true;
-});
+$('topic').addEventListener('input',()=>{
+  sugs=suggestFor($('topic').value);
+  drawSugs($('suggest'),sugs,s=>{$('topic').value=s.topic;sugs=[];drawSugs($('suggest'),[],()=>{});
+    drawLogSubrow();refreshSave();const f=$('chipsM').querySelector('.chip');if(f)f.focus();});
+  drawLogSubrow();refreshSave();});
+$('topic').addEventListener('blur',()=>setTimeout(()=>drawSugs($('suggest'),[],()=>{}),140));
+$('topic').addEventListener('keydown',ev=>{
+  if(ev.key==='Enter'){ev.preventDefault();
+    if(sugs.length){$('topic').value=sugs[0].topic;sugs=[];drawSugs($('suggest'),[],()=>{});drawLogSubrow();refreshSave();}
+    const f=$('chipsM').querySelector('.chip');if(f)f.focus();}
+  else if(ev.key==='Escape'){sugs=[];drawSugs($('suggest'),[],()=>{});}});
+$('addnote').addEventListener('click',()=>{$('addnote').hidden=true;$('notewrap').hidden=false;$('note').focus();});
+$('note').addEventListener('input',()=>{const n=$('note').value.length;
+  if(n>NOTE_CAP-30){$('ncount').hidden=false;$('ncount').textContent=n+' / '+NOTE_CAP;
+    $('ncount').style.color=n>NOTE_CAP?'var(--red)':'var(--ink-3)';}else $('ncount').hidden=true;});
+$('save').addEventListener('click',save);
+$('search').addEventListener('input',e=>{query=e.target.value;drawRanked();});
 
-el.save.addEventListener('click',save);
-document.addEventListener('keydown',ev=>{
-  if ((ev.metaKey||ev.ctrlKey) && ev.key==='Enter' && !el.save.disabled) save();
-  if (ev.key==='Escape' && !el.sheet.hidden) closeSheet();
-});
+$('eTopic').addEventListener('input',()=>{
+  eSugs=suggestFor($('eTopic').value,editing?editing.topicKey:null);
+  drawSugs($('eSuggest'),eSugs,s=>{$('eTopic').value=s.topic;drawSugs($('eSuggest'),[],()=>{});drawESub();});
+  drawESub();});
+$('eSave').addEventListener('click',saveEdit);
+$('eDel').addEventListener('click',deleteEdit);
+$('eUntick').addEventListener('click',untickEdit);
 
-el.nav.addEventListener('click',()=>go(!onSettings));
 $('bExport').addEventListener('click',doExport);
-$('bImport').addEventListener('click',()=>el.file.click());
-el.file.addEventListener('change',e=>{
-  const f=e.target.files && e.target.files[0];
-  if (f) doImport(f);
-  e.target.value='';
-});
+$('bImport').addEventListener('click',()=>$('file').click());
+$('file').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];if(f)doImport(f);e.target.value='';});
 $('bWipe').addEventListener('click',armWipe);
+$('hideFoot').addEventListener('click',()=>{showHidden=!showHidden;drawRanked();});
 
-/* Re-read on return to foreground: a home-screen app stays resident
-   for days, and two tabs would otherwise drift apart. */
-document.addEventListener('visibilitychange',async ()=>{
-  if (document.visibilityState!=='visible' || !db || readFailed) return;
-  try {
-    entries = await readAll(); meta = await readMeta();
-    rebuild(); drawRecent(); drawSubject(); drawNag();
-    if (onSettings) drawSettings();
-  } catch {}
-});
+document.addEventListener('keydown',ev=>{
+  if((ev.metaKey||ev.ctrlKey)&&ev.key==='Enter'&&!$('save').disabled)save();
+  if(ev.key==='Escape')document.querySelectorAll('.sheet').forEach(s=>s.hidden=true);});
 
-/* ═════════════════════════════════════════════════════════════
-   BOOT
-   ═════════════════════════════════════════════════════════════ */
+/* Ticks expire and age bands cross at midnight; a home-screen app
+   stays resident for days, so recompute on return to foreground.
+   Re-reading also stops two tabs drifting apart. */
+document.addEventListener('visibilitychange',async()=>{
+  if(document.visibilityState!=='visible'||!db||readFailed)return;
+  try{entries=await readAll();meta=await readMeta();recompute();drawAll();}catch{}});
+
+/* ══════════════════ BOOT ══════════════════ */
 (async function boot(){
-  buildChips(); drawSubject(); drawRecent(); refresh();
-
-  try { db = await openDB(); }
-  catch {
-    el.fatal.hidden=false;
-    el.fatal.innerHTML='<b>This browser will not let the app store anything.</b> Private browsing is the usual cause. Open it in a normal window — nothing typed here would be saved.';
-    el.save.disabled=true; readFailed=true;
-    return;
+  buildChips($('chipsM'),$('chipsR'),picked,refreshSave);
+  drawLogSubrow(); refreshSave();
+  try{db=await openDB();}
+  catch{
+    $('fatal').hidden=false;
+    $('fatal').innerHTML='<b>This browser will not let the app store anything.</b> Private browsing is the usual cause. Open it in a normal window — nothing typed here would be saved.';
+    $('save').disabled=true;readFailed=true;return;
   }
-
-  try {
-    entries = await readAll();
-    meta    = await readMeta();
-  } catch {
-    readFailed = true; entries=[];
-    el.lost.hidden=false;
-    el.lost.innerHTML="<b>Your entries couldn't be read.</b> Nothing has been deleted — close the app completely and reopen it. Saving and export are disabled so nothing gets overwritten.";
-    refresh(); return;
+  try{entries=await readAll();meta=await readMeta();}
+  catch{
+    readFailed=true;entries=[];
+    $('lost').hidden=false;
+    $('lost').innerHTML="<b>Your entries couldn't be read.</b> Nothing has been deleted — close the app completely and reopen it. Saving and export are disabled so nothing gets overwritten.";
+    refreshSave();return;
   }
-
-  // Possible eviction: empty log but there is a record of exporting before.
-  if (!entries.length && meta.lastExportAt){
-    el.evict.hidden=false;
-    el.evict.innerHTML='<b>This log is empty but you have exported before.</b> Your data may have been cleared by the browser — import your last backup.';
+  if(!entries.length&&meta.lastExportAt){
+    $('evict').hidden=false;
+    $('evict').innerHTML='<b>This log is empty but you have exported before.</b> Your data may have been cleared by the browser — import your last backup.';
   }
-
-  rebuild(); drawRecent(); drawSubject(); drawNag(); refresh();
-
-  if (!meta.persistRequested){
-    await metaSet('persistRequested',true);
-    await metaSet('schemaVersion',SCHEMA);
-    if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
+  recompute(); drawAll(); refreshSave();
+  if(!meta.persistRequested){
+    await metaSet('persistRequested',true); await metaSet('schemaVersion',SCHEMA);
+    if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
   }
-
-  el.topic.focus();
+  $('topic').focus();
 })();
 </script>
 </body>
