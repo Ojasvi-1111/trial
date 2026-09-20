@@ -1,0 +1,900 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#010736">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mistakes">
+<title>Mistake Logger</title>
+<style>
+:root{
+  --bg:#010736;
+  --surface:#0D1C42;
+  --surface-hi:#142654;
+  --line:#1B2E5E;
+  --line-hi:#2A4079;
+  --ink:#EAEEF7;
+  --ink-2:#93A1C4;
+  --ink-3:#5E6C96;
+  --teal:#2FBFAE;
+  --teal-ink:#012420;
+  --teal-soft:rgba(47,191,174,.13);
+  --danger:#FF7A7A;
+  --r:10px;
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{-webkit-text-size-adjust:100%;height:100%;}
+body{
+  margin:0;height:100%;
+  background:var(--bg);color:var(--ink);
+  font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif;
+  font-size:15px;line-height:1.45;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  overscroll-behavior-y:none;
+}
+.wrap{max-width:520px;margin:0 auto;padding:0 16px;}
+
+/* ---------- header ---------- */
+header{
+  height:36px;display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:6px;
+}
+.crumb{font-size:13px;font-weight:500;color:var(--ink-3);letter-spacing:.01em;}
+.iconbtn{
+  width:32px;height:32px;display:grid;place-items:center;position:relative;
+  background:none;border:0;border-radius:8px;color:var(--ink-2);cursor:pointer;
+}
+.iconbtn:active{background:var(--surface);}
+.iconbtn svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.7;}
+.dot{
+  position:absolute;top:4px;right:4px;width:7px;height:7px;border-radius:50%;
+  background:var(--teal);box-shadow:0 0 0 2px var(--bg);
+}
+.dot[hidden]{display:none;}
+
+/* ---------- topic ---------- */
+.field{position:relative;}
+#topic{
+  width:100%;height:56px;
+  font:500 22px/1.2 inherit;letter-spacing:-.01em;
+  color:var(--ink);background:var(--surface);
+  border:1px solid var(--line);border-radius:var(--r);
+  padding:0 15px;outline:none;
+}
+#topic::placeholder{color:var(--ink-3);font-weight:400;}
+#topic:focus{border-color:var(--line-hi);box-shadow:0 0 0 3px var(--teal-soft);}
+
+#suggest{
+  position:absolute;z-index:30;left:0;right:0;top:calc(100% + 6px);
+  background:var(--surface);border:1px solid var(--line-hi);border-radius:var(--r);
+  box-shadow:0 14px 40px rgba(0,2,20,.55);
+  max-height:180px;overflow-y:auto;overscroll-behavior:contain;
+}
+#suggest:empty{display:none;}
+.sug{
+  display:flex;align-items:center;gap:10px;height:44px;padding:0 14px;
+  border-bottom:1px solid var(--line);cursor:pointer;
+}
+.sug:last-child{border-bottom:0;}
+.sug:active{background:var(--surface-hi);}
+.sug .nm{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sug .sb{font-size:11.5px;color:var(--ink-3);white-space:nowrap;}
+.sug .ct{margin-left:auto;font-size:12.5px;color:var(--ink-3);font-variant-numeric:tabular-nums;}
+
+/* ---------- subject row ---------- */
+.subrow{height:22px;display:flex;align-items:center;margin-top:10px;}
+.sublocked{font-size:13px;color:var(--ink-2);}
+.sublocked b{font-weight:500;color:var(--teal);}
+.subpick{
+  font:500 13px/1 inherit;color:var(--teal);
+  background:var(--teal-soft);border:1px solid rgba(47,191,174,.32);
+  border-radius:7px;padding:5px 10px;cursor:pointer;
+}
+.subempty{font-size:13px;color:var(--ink-3);}
+
+/* ---------- chips ---------- */
+.chips{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px;}
+.chips.read{
+  margin-top:0;padding-top:16px;position:relative;
+}
+.chips.read::before{
+  content:"";position:absolute;top:8px;left:0;right:0;height:1px;background:var(--line);
+}
+.chip{
+  height:44px;display:flex;align-items:center;justify-content:center;
+  font:500 14px/1 inherit;text-align:center;
+  color:var(--ink-2);background:var(--surface);
+  border:1px solid var(--line);border-radius:var(--r);
+  cursor:pointer;transition:background .13s,color .13s,border-color .13s;
+}
+.chip:active{background:var(--surface-hi);}
+.chip[aria-pressed="true"]{
+  background:var(--teal);border-color:var(--teal);color:var(--teal-ink);
+}
+
+/* ---------- note ---------- */
+.noterow{margin-top:16px;min-height:28px;}
+.addnote{
+  font:500 13px/1 inherit;color:var(--ink-3);
+  background:none;border:0;padding:6px 0;cursor:pointer;
+}
+.addnote:active{color:var(--ink-2);}
+#note{
+  width:100%;height:44px;
+  font:400 16px/1.4 inherit;color:var(--ink);
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  padding:0 14px;outline:none;
+}
+#note::placeholder{color:var(--ink-3);}
+#note:focus{border-color:var(--line-hi);}
+#ncount{font-size:11.5px;color:var(--ink-3);text-align:right;margin-top:4px;font-variant-numeric:tabular-nums;}
+
+/* ---------- save ---------- */
+#save{
+  width:100%;height:52px;margin-top:14px;
+  font:600 16px/1 inherit;letter-spacing:.01em;
+  color:var(--teal-ink);background:var(--teal);
+  border:0;border-radius:var(--r);cursor:pointer;
+  transition:opacity .13s,transform .08s;
+}
+#save:active{transform:scale(.988);}
+#save:disabled{background:var(--surface);color:var(--ink-3);cursor:default;transform:none;}
+
+/* ---------- recent ---------- */
+.recent{margin:30px 0 40px;border-top:1px solid var(--line);padding-top:14px;}
+.rhead{font-size:12px;color:var(--ink-3);margin-bottom:12px;font-variant-numeric:tabular-nums;}
+.entry{padding:10px 0;border-bottom:1px solid var(--line);}
+.entry:last-child{border-bottom:0;}
+.etop{display:flex;align-items:baseline;gap:8px;}
+.etop .t{font-weight:500;font-size:14.5px;}
+.etop .s{font-size:11px;color:var(--ink-3);margin-left:auto;white-space:nowrap;}
+.enote{font-size:13px;color:var(--ink-2);margin-top:2px;}
+.etags{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;}
+.tag{font-size:11px;padding:2px 7px;border-radius:99px;background:var(--surface);color:var(--ink-2);border:1px solid var(--line);}
+.tag.r{color:var(--ink-3);}
+.empty{font-size:13.5px;color:var(--ink-3);}
+
+/* ---------- settings ---------- */
+.sect{margin-top:22px;}
+.sect h2{font:500 12px/1 inherit;color:var(--ink-3);margin:0 0 10px;}
+.btn{
+  width:100%;height:48px;margin-bottom:8px;
+  display:flex;align-items:center;padding:0 15px;gap:10px;
+  font:500 15px/1 inherit;text-align:left;
+  color:var(--ink);background:var(--surface);
+  border:1px solid var(--line);border-radius:var(--r);cursor:pointer;
+}
+.btn:active{background:var(--surface-hi);}
+.btn:disabled{color:var(--ink-3);cursor:default;}
+.btn small{margin-left:auto;font-weight:400;font-size:12.5px;color:var(--ink-3);}
+.btn.warn{color:var(--danger);border-color:rgba(255,122,122,.25);}
+.note{font-size:12.5px;color:var(--ink-3);line-height:1.5;margin:2px 2px 16px;}
+.stat{font-size:13px;color:var(--ink-2);margin-bottom:14px;font-variant-numeric:tabular-nums;}
+
+/* ---------- sheet ---------- */
+#sheet{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;}
+#sheet[hidden]{display:none;}
+.scrim{position:absolute;inset:0;background:rgba(0,1,12,.68);}
+.sheetbody{
+  position:relative;width:100%;max-width:520px;margin:0 auto;
+  background:var(--surface);border-radius:16px 16px 0 0;
+  border-top:1px solid var(--line-hi);
+  padding:14px 16px calc(18px + env(safe-area-inset-bottom,0px));
+  max-height:74vh;display:flex;flex-direction:column;
+  animation:up .19s cubic-bezier(.2,.8,.3,1);
+}
+@keyframes up{from{transform:translateY(14px);opacity:.6}to{transform:none;opacity:1}}
+.sheetbody h3{font:500 14px/1 inherit;margin:2px 0 14px;color:var(--ink-2);}
+.subgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;overflow-y:auto;overscroll-behavior:contain;padding-bottom:4px;}
+.subchip{
+  min-height:42px;display:flex;align-items:center;padding:0 12px;
+  font:500 13.5px/1.2 inherit;text-align:left;
+  color:var(--ink);background:var(--bg);
+  border:1px solid var(--line);border-radius:9px;cursor:pointer;
+}
+.subchip:active{border-color:var(--teal);color:var(--teal);}
+
+/* ---------- toast + banners ---------- */
+#toast{
+  position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));
+  transform:translateX(-50%) translateY(8px);
+  max-width:calc(100% - 32px);z-index:70;
+  background:var(--ink);color:var(--bg);
+  font:500 13.5px/1 inherit;padding:11px 16px;border-radius:99px;
+  opacity:0;pointer-events:none;transition:opacity .16s,transform .16s;
+}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+
+.banner{
+  margin:0 0 12px;padding:12px 14px;border-radius:var(--r);
+  font-size:13px;line-height:1.5;
+  background:var(--surface);border:1px solid var(--line-hi);color:var(--ink-2);
+}
+.banner.bad{border-color:rgba(255,122,122,.35);color:var(--danger);}
+.banner b{color:var(--ink);font-weight:500;}
+.banner[hidden]{display:none;}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <span class="crumb" id="crumb">Log</span>
+    <button class="iconbtn" id="nav" aria-label="Settings">
+      <svg viewBox="0 0 24 24" id="navIcon"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span class="dot" id="navDot" hidden></span>
+    </button>
+  </header>
+
+  <p class="banner bad" id="fatal" hidden></p>
+  <p class="banner bad" id="lost" hidden></p>
+  <p class="banner" id="evict" hidden></p>
+
+  <!-- ══════════ LOG ══════════ -->
+  <main id="scLog">
+    <div class="field">
+      <input id="topic" type="text" placeholder="Topic" autocomplete="off"
+             autocapitalize="words" autocorrect="off" spellcheck="false" enterkeyhint="next">
+      <div id="suggest" role="listbox"></div>
+    </div>
+
+    <div class="subrow" id="subrow"></div>
+
+    <div class="chips" id="chipsM"></div>
+    <div class="chips read" id="chipsR"></div>
+
+    <div class="noterow" id="noterow">
+      <button class="addnote" id="addnote" type="button">+ note</button>
+      <div id="notewrap" hidden>
+        <input id="note" type="text" placeholder="what exactly" autocomplete="off" enterkeyhint="done">
+        <div id="ncount" hidden></div>
+      </div>
+    </div>
+
+    <button id="save" disabled>Save</button>
+
+    <section class="recent">
+      <div class="rhead" id="rhead">Nothing logged yet</div>
+      <div id="rlist"><p class="empty">Type a topic above. Five mistakes from one block should take about a minute.</p></div>
+    </section>
+  </main>
+
+  <!-- ══════════ SETTINGS ══════════ -->
+  <main id="scSet" hidden>
+    <div class="stat" id="stat"></div>
+    <p class="banner" id="nag" hidden></p>
+
+    <div class="sect">
+      <h2>Backup</h2>
+      <button class="btn" id="bExport">Export JSON <small id="expWhen"></small></button>
+      <button class="btn" id="bImport">Import JSON <small>merge</small></button>
+      <input type="file" id="file" accept="application/json,.json" hidden>
+      <p class="note">Export writes one file with everything in it. Mail it to yourself — a file sitting in Downloads is not a backup. Import skips anything already here, so running it twice is safe.</p>
+    </div>
+
+    <div class="sect">
+      <h2>Danger</h2>
+      <button class="btn warn" id="bWipe">Clear all data</button>
+      <p class="note">This cannot be undone and there is no copy anywhere else.</p>
+    </div>
+
+    <div class="sect">
+      <h2>About</h2>
+      <p class="note">Everything lives in this browser on this device. Nothing is uploaded, there is no account and no server. Clearing your browser data, or iOS reclaiming space after a long gap, will erase the log — export is the only protection.</p>
+    </div>
+  </main>
+</div>
+
+<!-- subject sheet -->
+<div id="sheet" hidden>
+  <div class="scrim" id="scrim"></div>
+  <div class="sheetbody">
+    <h3 id="sheetTitle">Which subject?</h3>
+    <div class="subgrid" id="subgrid"></div>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+
+/* ═════════════════════════════════════════════════════════════
+   CONSTANTS — single source of truth. Nothing below hardcodes
+   a multiplier. Most of SCORING is unused until step 2; it
+   ships now so step 2 never invents its own numbers.
+   ═════════════════════════════════════════════════════════════ */
+const SCORING = {
+  age: [
+    { maxDays: 45,  mult: 1 },
+    { maxDays: 180, mult: 0.5 },
+    { maxDays: Infinity, mult: 0.25 }
+  ],
+  revisedMult: 0.25,
+  repeatMult: 4,
+  repeatStep: 0.5,
+  decayWindowDays: 90,
+  decayFloor: 0.75,
+  tickLifeDays: 30,
+  recentWindowDays: 90,
+  splitWarnAt: 16,
+  searchMinEntries: 50,
+  expandCap: 10,
+  exportNagDays: 7,
+  readingPanelDays: 30
+};
+
+const MATERIAL = ['gap','confuse','fifty','luck'];
+const READING  = ['misread','blank'];
+
+const TYPES = [
+  { code:'gap',     label:"Didn't know it" },
+  { code:'confuse', label:'Confused two'   },
+  { code:'fifty',   label:'50:50, wrong'   },
+  { code:'luck',    label:'Lucky guess'    },
+  { code:'misread', label:'Misread stem'   },
+  { code:'blank',   label:'Blanked'        }
+];
+const LABEL = Object.fromEntries(TYPES.map(t => [t.code, t.label]));
+
+const SUBJECTS = [
+  'Anatomy','Physiology','Biochemistry','Pathology','Pharmacology','Microbiology',
+  'Forensic Medicine','Community Medicine','Medicine','Surgery','OBG','Anaesthesia',
+  'Radiology','Pediatrics','Dermatology','Psychiatry','Orthopaedics','ENT','Ophthalmology'
+];
+
+const SCHEMA = 1;
+const NOTE_CAP = 140;
+
+/* ═════════════════════════════════════════════════════════════
+   STATE
+   ═════════════════════════════════════════════════════════════ */
+let db = null;
+let entries = [];                 // whole log, in memory
+let topics  = new Map();          // topicKey -> {topic, subject, count}
+let meta    = {};
+const picked = new Set();         // selected type codes
+let pendingSubject = null;        // subject chosen for a brand-new topic
+let saving = false;
+let readFailed = false;
+let sugs = [];
+
+const $ = id => document.getElementById(id);
+const el = {
+  topic:$('topic'), suggest:$('suggest'), subrow:$('subrow'),
+  chipsM:$('chipsM'), chipsR:$('chipsR'),
+  addnote:$('addnote'), notewrap:$('notewrap'), note:$('note'), ncount:$('ncount'),
+  save:$('save'), rhead:$('rhead'), rlist:$('rlist'),
+  toast:$('toast'), fatal:$('fatal'), lost:$('lost'), evict:$('evict'),
+  sheet:$('sheet'), scrim:$('scrim'), subgrid:$('subgrid'),
+  nav:$('nav'), navDot:$('navDot'), crumb:$('crumb'),
+  scLog:$('scLog'), scSet:$('scSet'),
+  stat:$('stat'), nag:$('nag'), expWhen:$('expWhen'), file:$('file')
+};
+
+/* ═════════════════════════════════════════════════════════════
+   TIME — every boundary is local midnight, never rolling 24h.
+   ═════════════════════════════════════════════════════════════ */
+const midnight = t => { const d = new Date(t); d.setHours(0,0,0,0); return d.getTime(); };
+const daysBetween = (a,b) => Math.round((midnight(b) - midnight(a)) / 86400000);
+const ms = t => new Date(t).getTime();          // ALWAYS compare times numerically
+
+/* ═════════════════════════════════════════════════════════════
+   TOPIC NAMES — §6. Fails silently if wrong, so it is first.
+   ═════════════════════════════════════════════════════════════ */
+function normalise(s){
+  return String(s).trim().toLowerCase().replace(/\s+/g,' ').replace(/\./g,'').trim();
+}
+const clean = s => String(s).trim().replace(/\s+/g,' ');
+
+function rebuild(){
+  topics = new Map();
+  for (const e of entries){
+    const t = topics.get(e.topicKey);
+    if (t) t.count++;
+    else topics.set(e.topicKey, { topic:e.topic, subject:e.subject, count:1 });
+  }
+}
+
+/* Step 2 replaces this ordering with topic score. Until scoring
+   exists, entry count is the only signal available. */
+function suggestFor(raw){
+  const q = normalise(raw);
+  if (!q) return [];
+  const all = [];
+  topics.forEach((v,key) => all.push({ key, ...v }));
+  const by = (a,b) => b.count - a.count || a.topic.localeCompare(b.topic);
+  const pre = all.filter(t => t.key.startsWith(q)).sort(by);
+  const sub = all.filter(t => !t.key.startsWith(q) && t.key.includes(q)).sort(by);
+  return pre.concat(sub).slice(0,8);
+}
+
+/* ═════════════════════════════════════════════════════════════
+   STORAGE — §5
+   ═════════════════════════════════════════════════════════════ */
+function openDB(){
+  return new Promise((res,rej)=>{
+    if (!('indexedDB' in window)) return rej(new Error('unsupported'));
+    const r = indexedDB.open('mistakeLog',1);
+    r.onupgradeneeded = ev => {
+      const d = ev.target.result;
+      if (!d.objectStoreNames.contains('entries')){
+        const s = d.createObjectStore('entries',{keyPath:'id'});
+        s.createIndex('topicKey','topicKey');
+        s.createIndex('created','created');
+      }
+      if (!d.objectStoreNames.contains('meta')) d.createObjectStore('meta',{keyPath:'key'});
+    };
+    r.onsuccess = () => res(r.result);
+    r.onerror   = () => rej(r.error);
+  });
+}
+const readAll = () => new Promise((res,rej)=>{
+  const r = db.transaction('entries','readonly').objectStore('entries').getAll();
+  r.onsuccess = () => res(r.result||[]); r.onerror = () => rej(r.error);
+});
+const readMeta = () => new Promise(res=>{
+  const r = db.transaction('meta','readonly').objectStore('meta').getAll();
+  r.onsuccess = () => { const o={}; (r.result||[]).forEach(x=>o[x.key]=x.value); res(o); };
+  r.onerror   = () => res({});
+});
+const metaSet = (k,v) => new Promise(res=>{
+  meta[k]=v;
+  const tx = db.transaction('meta','readwrite');
+  tx.objectStore('meta').put({key:k,value:v});
+  tx.oncomplete=res; tx.onerror=res;
+});
+const addOne = e => new Promise((res,rej)=>{
+  const tx = db.transaction('entries','readwrite');
+  tx.objectStore('entries').add(e);
+  tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error); tx.onabort=()=>rej(tx.error||new Error('abort'));
+});
+/* Import is ONE transaction — 300 of 400 written is not an option. */
+const addMany = list => new Promise((res,rej)=>{
+  if (!list.length) return res();
+  const tx = db.transaction('entries','readwrite');
+  const st = tx.objectStore('entries');
+  list.forEach(e => st.put(e));
+  tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error); tx.onabort=()=>rej(tx.error||new Error('abort'));
+});
+const wipe = () => new Promise((res,rej)=>{
+  const tx = db.transaction(['entries','meta'],'readwrite');
+  tx.objectStore('entries').clear(); tx.objectStore('meta').clear();
+  tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error);
+});
+
+function uuid(){
+  if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{
+    const r = Math.random()*16|0; return (c==='x'?r:(r&0x3|0x8)).toString(16);
+  });
+}
+
+/* ═════════════════════════════════════════════════════════════
+   REPEAT FLAG — §8. Decided once at save, then stored forever.
+   No ticks exist in step 1, so this is always false — but the
+   rule lives here so step 2 doesn't reinvent it.
+   ═════════════════════════════════════════════════════════════ */
+const lastTick = e => (e.revisions && e.revisions.length) ? e.revisions[e.revisions.length-1] : null;
+function isLive(e, at){
+  const t = lastTick(e); if (!t) return false;
+  const gap = midnight(at) - midnight(t);
+  return gap >= 0 && gap <= SCORING.tickLifeDays * 86400000;   // >=0 guards a backwards clock
+}
+function flagAt(topicKey, at){
+  return entries.some(e => e.topicKey === topicKey && isLive(e, at) && ms(lastTick(e)) < ms(at));
+}
+
+/* ═════════════════════════════════════════════════════════════
+   RENDER
+   ═════════════════════════════════════════════════════════════ */
+function buildChips(){
+  const mk = t => {
+    const b = document.createElement('button');
+    b.type='button'; b.className='chip'; b.dataset.code=t.code;
+    b.textContent=t.label; b.setAttribute('aria-pressed','false');
+    b.addEventListener('click',()=>{
+      picked.has(t.code) ? picked.delete(t.code) : picked.add(t.code);
+      b.setAttribute('aria-pressed', picked.has(t.code)?'true':'false');
+      refresh();
+    });
+    return b;
+  };
+  TYPES.filter(t=>MATERIAL.includes(t.code)).forEach(t=>el.chipsM.appendChild(mk(t)));
+  TYPES.filter(t=>READING.includes(t.code)).forEach(t=>el.chipsR.appendChild(mk(t)));
+}
+
+function currentSubject(){
+  const key = normalise(el.topic.value);
+  if (!key) return { mode:'empty', subject:null };
+  const known = topics.get(key);
+  if (known) return { mode:'locked', subject:known.subject };
+  return { mode:'choose', subject:pendingSubject };
+}
+
+function drawSubject(){
+  const s = currentSubject();
+  el.subrow.innerHTML='';
+  if (s.mode==='empty'){
+    const p=document.createElement('span'); p.className='subempty'; p.textContent='Subject fills in once you pick a topic';
+    el.subrow.appendChild(p); return;
+  }
+  if (s.mode==='locked'){
+    const p=document.createElement('span'); p.className='sublocked';
+    p.innerHTML='Subject &middot; <b></b>'; p.querySelector('b').textContent=s.subject;
+    el.subrow.appendChild(p); return;
+  }
+  const b=document.createElement('button');
+  b.type='button'; b.className='subpick';
+  b.textContent = s.subject ? s.subject + '  ·  change' : 'Choose subject';
+  b.addEventListener('click',openSheet);
+  el.subrow.appendChild(b);
+}
+
+function drawSuggest(){
+  el.suggest.innerHTML='';
+  sugs.forEach(s=>{
+    const d=document.createElement('div'); d.className='sug'; d.setAttribute('role','option');
+    const n=document.createElement('span'); n.className='nm'; n.textContent=s.topic;
+    const b=document.createElement('span'); b.className='sb'; b.textContent=s.subject;
+    const c=document.createElement('span'); c.className='ct'; c.textContent=s.count;
+    d.append(n,b,c);
+    d.addEventListener('mousedown',ev=>{ev.preventDefault();pick(s);});
+    el.suggest.appendChild(d);
+  });
+}
+
+function pick(s){
+  el.topic.value = s.topic;
+  sugs=[]; drawSuggest(); drawSubject(); refresh();
+  const f=document.querySelector('.chip'); if (f) f.focus();
+}
+
+function refresh(){
+  const s = currentSubject();
+  el.save.disabled = saving || readFailed || !normalise(el.topic.value) || !s.subject || picked.size===0;
+}
+
+function drawRecent(){
+  if (!entries.length){
+    el.rhead.textContent='Nothing logged yet';
+    el.rlist.innerHTML='<p class="empty">Type a topic above. Five mistakes from one block should take about a minute.</p>';
+    return;
+  }
+  el.rhead.textContent = entries.length + (entries.length===1?' mistake':' mistakes') +
+                         ' · ' + topics.size + (topics.size===1?' topic':' topics');
+  const recent = entries.slice().sort((a,b)=>ms(b.created)-ms(a.created)).slice(0,25);
+  el.rlist.innerHTML='';
+  for (const e of recent){
+    const row=document.createElement('div'); row.className='entry';
+    const top=document.createElement('div'); top.className='etop';
+    const t=document.createElement('span'); t.className='t'; t.textContent=e.topic;
+    const s=document.createElement('span'); s.className='s'; s.textContent=e.subject;
+    top.append(t,s); row.appendChild(top);
+    if (e.note){ const n=document.createElement('div'); n.className='enote'; n.textContent=e.note; row.appendChild(n); }
+    const tags=document.createElement('div'); tags.className='etags';
+    e.types.forEach(c=>{
+      const x=document.createElement('span');
+      x.className='tag'+(READING.includes(c)?' r':'');
+      x.textContent=LABEL[c]||c; tags.appendChild(x);
+    });
+    row.appendChild(tags); el.rlist.appendChild(row);
+  }
+}
+
+let tt=null;
+function toast(msg,dur){
+  el.toast.textContent=msg; el.toast.classList.add('on');
+  clearTimeout(tt); tt=setTimeout(()=>el.toast.classList.remove('on'), dur||1700);
+}
+
+/* ═════════════════════════════════════════════════════════════
+   SUBJECT SHEET
+   ═════════════════════════════════════════════════════════════ */
+function openSheet(){
+  el.subgrid.innerHTML='';
+  SUBJECTS.forEach(name=>{
+    const b=document.createElement('button');
+    b.type='button'; b.className='subchip'; b.textContent=name;
+    b.addEventListener('click',()=>{
+      pendingSubject=name; closeSheet(); drawSubject(); refresh();
+    });
+    el.subgrid.appendChild(b);
+  });
+  el.sheet.hidden=false;
+}
+function closeSheet(){ el.sheet.hidden=true; }
+el.scrim.addEventListener('click',closeSheet);
+
+/* ═════════════════════════════════════════════════════════════
+   SAVE
+   ═════════════════════════════════════════════════════════════ */
+async function save(){
+  if (saving || readFailed) return;                 // double-tap guard
+  const typed = clean(el.topic.value);
+  const key   = normalise(typed);
+  const s     = currentSubject();
+  if (!key || !s.subject || picked.size===0) return;
+
+  const known = topics.get(key);
+  const now   = new Date().toISOString();
+
+  const entry = {
+    id: uuid(),
+    created: now,
+    subject: known ? known.subject : s.subject,     // §7 subject belongs to the topic
+    topic:   known ? known.topic   : typed,         // §6 canonical spelling wins
+    topicKey: key,
+    types: TYPES.filter(t=>picked.has(t.code)).map(t=>t.code),
+    note: el.note.value.trim(),
+    revisions: [],
+    repeatWhileFresh: flagAt(key, now)              // §8 decided once, stored
+  };
+
+  saving = true;
+  const wasRepeat = entry.repeatWhileFresh;
+  const topicName = entry.topic;
+  clearForm();
+  el.topic.focus();                                 // sync, so the keyboard never drops
+
+  try {
+    await addOne(entry);
+    entries.push(entry); rebuild(); drawRecent(); drawSubject();
+    toast(wasRepeat ? 'Repeat in ' + topicName : 'Saved', wasRepeat ? 4000 : 1400);
+  } catch (err) {
+    el.lost.hidden=false;
+    el.lost.innerHTML = '<b>Not saved.</b> ' + esc(entry.topic) + ' — ' +
+      entry.types.map(c=>esc(LABEL[c])).join(', ') +
+      '. Storage refused the write (' + esc(err && err.name ? err.name : 'unknown') +
+      '). Log it again before closing the app.';
+  } finally {
+    saving=false; refresh();
+  }
+}
+const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function clearForm(){
+  el.topic.value=''; el.note.value='';
+  el.notewrap.hidden=true; el.addnote.hidden=false; el.ncount.hidden=true;
+  picked.clear(); pendingSubject=null;
+  document.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed','false'));
+  sugs=[]; drawSuggest(); drawSubject(); refresh();
+}
+
+/* ═════════════════════════════════════════════════════════════
+   EXPORT / IMPORT — §14
+   ═════════════════════════════════════════════════════════════ */
+function localStamp(){
+  const d=new Date(), p=n=>String(n).padStart(2,'0');
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());   // local, not UTC
+}
+
+async function doExport(){
+  if (readFailed) return;                            // never overwrite a good backup with nothing
+  if (!entries.length) return;
+  const payload = {
+    app:'mistake-logger', schemaVersion:SCHEMA,
+    exportedAt:new Date().toISOString(),
+    entryCount:entries.length, entries
+  };
+  const blob = new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href=url; a.download='mistake-log-'+localStamp()+'.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+  await metaSet('lastExportAt', new Date().toISOString());
+  await metaSet('lastExportCount', entries.length);
+  drawSettings(); drawNag();
+  toast('Saved. Mail it to yourself — a file in Downloads is not a backup.', 5000);
+}
+
+function validEntry(x){
+  if (!x || typeof x!=='object') return null;
+  if (typeof x.id!=='string' || !x.id) return null;
+  if (!x.created || isNaN(ms(x.created))) return null;
+  const topic = typeof x.topic==='string' ? clean(x.topic) : '';
+  if (!topic) return null;
+  if (typeof x.subject!=='string' || !SUBJECTS.includes(x.subject)) return null;
+  const types = Array.isArray(x.types) ? x.types.filter(c=>LABEL[c]) : [];
+  if (!types.length) return null;
+  const revisions = Array.isArray(x.revisions) ? x.revisions.filter(r=>r && !isNaN(ms(r))) : [];
+  return {
+    id:x.id, created:x.created, subject:x.subject,
+    topic, topicKey:normalise(topic),                // never trust a derived field from a file
+    types, note:typeof x.note==='string'?x.note:'',
+    revisions, repeatWhileFresh: x.repeatWhileFresh===true
+  };
+}
+
+async function doImport(file){
+  let raw;
+  try { raw = JSON.parse(await file.text()); }
+  catch { return toast("That file isn't a valid backup.",3500); }
+
+  if (!raw || raw.app!=='mistake-logger') return toast('That backup is from a different app.',3500);
+  if (!Array.isArray(raw.entries))        return toast("That file isn't a valid backup.",3500);
+  const v = Number(raw.schemaVersion);
+  if (!Number.isFinite(v))                return toast("That file isn't a valid backup.",3500);
+  if (v > SCHEMA)                         return toast('This file was made by a newer version of the app.',4000);
+  // v < SCHEMA would migrate here. Nothing to migrate yet.
+
+  const have = new Set(entries.map(e=>e.id));
+  const seen = new Set();
+  let add=[], dupe=0, bad=0;
+  for (const x of raw.entries){
+    const e = validEntry(x);
+    if (!e){ bad++; continue; }
+    if (have.has(e.id) || seen.has(e.id)){ dupe++; continue; }
+    seen.add(e.id); add.push(e);
+  }
+  try { await addMany(add); }
+  catch { return toast('Import failed. Nothing was changed.',4000); }
+
+  entries = entries.concat(add); rebuild(); drawRecent(); drawSettings(); drawSubject();
+  toast('added '+add.length+', skipped '+dupe+' already present, skipped '+bad+' malformed', 5000);
+}
+
+/* ═════════════════════════════════════════════════════════════
+   SETTINGS + NAG
+   ═════════════════════════════════════════════════════════════ */
+function nagDue(){
+  if (!entries.length) return false;
+  const from = meta.lastExportAt || entries.reduce((a,e)=>ms(e.created)<ms(a)?e.created:a, entries[0].created);
+  return daysBetween(from, Date.now()) > SCORING.exportNagDays;
+}
+function drawNag(){
+  const due = nagDue();
+  el.navDot.hidden = !due;
+  el.nag.hidden = !due;
+  if (due){
+    el.nag.innerHTML = meta.lastExportAt
+      ? '<b>Back this up.</b> Last export was ' + daysBetween(meta.lastExportAt, Date.now()) + ' days ago.'
+      : '<b>Back this up.</b> You have never exported.';
+  }
+}
+function drawSettings(){
+  el.stat.textContent = entries.length + (entries.length===1?' mistake':' mistakes') +
+                        ' · ' + topics.size + (topics.size===1?' topic':' topics');
+  el.expWhen.textContent = meta.lastExportAt
+    ? daysBetween(meta.lastExportAt, Date.now()) + 'd ago' : 'never';
+  el.bExport.disabled = !entries.length || readFailed;
+}
+
+let wipeArmed = false;
+function armWipe(){
+  if (!wipeArmed){
+    wipeArmed = true;
+    const stale = !meta.lastExportAt || daysBetween(meta.lastExportAt, Date.now()) > SCORING.exportNagDays;
+    $('bWipe').textContent = stale
+      ? 'No recent export — tap again to erase everything'
+      : 'Tap again to erase all ' + entries.length + ' mistakes';
+    setTimeout(()=>{ wipeArmed=false; $('bWipe').textContent='Clear all data'; }, 5000);
+    return;
+  }
+  wipe().then(()=>{
+    entries=[]; meta={}; rebuild(); drawRecent(); drawSettings(); drawNag(); drawSubject();
+    wipeArmed=false; $('bWipe').textContent='Clear all data';
+    toast('Everything erased.');
+  });
+}
+
+/* ═════════════════════════════════════════════════════════════
+   NAVIGATION
+   ═════════════════════════════════════════════════════════════ */
+let onSettings=false;
+function go(settings){
+  onSettings=settings;
+  el.scLog.hidden=settings; el.scSet.hidden=!settings;
+  el.crumb.textContent = settings ? 'Settings' : 'Log';
+  $('navIcon').innerHTML = settings
+    ? '<path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>'
+    : '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>';
+  if (settings){ drawSettings(); drawNag(); }
+  else setTimeout(()=>el.topic.focus(),40);
+  window.scrollTo(0,0);
+}
+
+/* ═════════════════════════════════════════════════════════════
+   WIRING
+   ═════════════════════════════════════════════════════════════ */
+el.topic.addEventListener('input',()=>{
+  sugs = suggestFor(el.topic.value); drawSuggest(); drawSubject(); refresh();
+});
+el.topic.addEventListener('blur',()=>setTimeout(()=>{ sugs=[]; drawSuggest(); },140));
+el.topic.addEventListener('keydown',ev=>{
+  if (ev.key==='Enter'){
+    ev.preventDefault();
+    if (sugs.length) pick(sugs[0]);
+    else { sugs=[]; drawSuggest(); const f=document.querySelector('.chip'); if (f) f.focus(); }
+  } else if (ev.key==='Escape'){ sugs=[]; drawSuggest(); }
+});
+
+el.addnote.addEventListener('click',()=>{
+  el.addnote.hidden=true; el.notewrap.hidden=false; el.note.focus();
+});
+el.note.addEventListener('input',()=>{
+  const n=el.note.value.length;
+  if (n > NOTE_CAP-30){
+    el.ncount.hidden=false; el.ncount.textContent=n+' / '+NOTE_CAP;
+    el.ncount.style.color = n>NOTE_CAP ? 'var(--danger)' : 'var(--ink-3)';
+  } else el.ncount.hidden=true;
+});
+
+el.save.addEventListener('click',save);
+document.addEventListener('keydown',ev=>{
+  if ((ev.metaKey||ev.ctrlKey) && ev.key==='Enter' && !el.save.disabled) save();
+  if (ev.key==='Escape' && !el.sheet.hidden) closeSheet();
+});
+
+el.nav.addEventListener('click',()=>go(!onSettings));
+$('bExport').addEventListener('click',doExport);
+$('bImport').addEventListener('click',()=>el.file.click());
+el.file.addEventListener('change',e=>{
+  const f=e.target.files && e.target.files[0];
+  if (f) doImport(f);
+  e.target.value='';
+});
+$('bWipe').addEventListener('click',armWipe);
+
+/* Re-read on return to foreground: a home-screen app stays resident
+   for days, and two tabs would otherwise drift apart. */
+document.addEventListener('visibilitychange',async ()=>{
+  if (document.visibilityState!=='visible' || !db || readFailed) return;
+  try {
+    entries = await readAll(); meta = await readMeta();
+    rebuild(); drawRecent(); drawSubject(); drawNag();
+    if (onSettings) drawSettings();
+  } catch {}
+});
+
+/* ═════════════════════════════════════════════════════════════
+   BOOT
+   ═════════════════════════════════════════════════════════════ */
+(async function boot(){
+  buildChips(); drawSubject(); drawRecent(); refresh();
+
+  try { db = await openDB(); }
+  catch {
+    el.fatal.hidden=false;
+    el.fatal.innerHTML='<b>This browser will not let the app store anything.</b> Private browsing is the usual cause. Open it in a normal window — nothing typed here would be saved.';
+    el.save.disabled=true; readFailed=true;
+    return;
+  }
+
+  try {
+    entries = await readAll();
+    meta    = await readMeta();
+  } catch {
+    readFailed = true; entries=[];
+    el.lost.hidden=false;
+    el.lost.innerHTML="<b>Your entries couldn't be read.</b> Nothing has been deleted — close the app completely and reopen it. Saving and export are disabled so nothing gets overwritten.";
+    refresh(); return;
+  }
+
+  // Possible eviction: empty log but there is a record of exporting before.
+  if (!entries.length && meta.lastExportAt){
+    el.evict.hidden=false;
+    el.evict.innerHTML='<b>This log is empty but you have exported before.</b> Your data may have been cleared by the browser — import your last backup.';
+  }
+
+  rebuild(); drawRecent(); drawSubject(); drawNag(); refresh();
+
+  if (!meta.persistRequested){
+    await metaSet('persistRequested',true);
+    await metaSet('schemaVersion',SCHEMA);
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
+  }
+
+  el.topic.focus();
+})();
+</script>
+</body>
+</html>
